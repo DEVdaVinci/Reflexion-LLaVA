@@ -19,6 +19,62 @@ from prompts import reflect_prompt, react_agent_prompt, react_reflect_agent_prom
 from prompts import cot_agent_prompt, cot_reflect_agent_prompt, cot_reflect_prompt, COT_INSTRUCTION, COT_REFLECT_INSTRUCTION
 from fewshots import WEBTHINK_SIMPLE6, REFLECTIONS, COT, COT_REFLECT
 
+import torch
+from transformers import BitsAndBytesConfig
+from transformers import pipeline
+
+class ActionLLM:
+    def __init__(self, modelType, inModel: None):
+        self.modelType = modelType
+        
+        if inModel != None:
+            self.model = inModel
+        else:
+            if modelType == "LLaVA":
+                #!!!!!
+                self.quantization_config = BitsAndBytesConfig(
+                    load_in_4bit=True,
+                    bnb_4bit_compute_dtype=torch.float16
+                )
+                self.model_id = "llava-hf/llava-1.5-7b-hf"
+                self.pipe = pipeline("image-to-text", model=self.model_id, model_kwargs={"quantization_config": self.quantization_config})
+                #!!!!!
+            elif modelType == "AnyOpenAILLM":
+                self.model = AnyOpenAILLM(
+                    temperature=0,
+                    max_tokens=250,
+                    model_name="gpt-3.5-turbo",
+                    model_kwargs={"stop": "\n"},
+                    openai_api_key=os.environ['OPENAI_API_KEY'])
+            else:
+                self.model = AnyOpenAILLM(
+                    temperature=0,
+                    max_tokens=250,
+                    model_name="gpt-3.5-turbo",
+                    model_kwargs={"stop": "\n"},
+                    openai_api_key=os.environ['OPENAI_API_KEY'])
+    def run(self, prompt, image = None, inMaxNewTokens = 200):
+        if(self.modelType == "LLaVA"):
+            return self.run_LLaVA(prompt, image, inMaxNewTokens)
+        elif(self.modelType == "AnyOpenAILLM"):
+            return self.run_AnyOpenAILLM(prompt)
+        else:
+            return self.run_AnyOpenAILLM(prompt)
+    def run_LLaVA(self, prompt, image = None, inMaxNewTokens = 200):
+        max_new_tokens = inMaxNewTokens
+        prompt = prompt
+        if image != None:
+            outputs = self.pipe(image, prompt=prompt, generate_kwargs={"max_new_tokens": max_new_tokens})
+        else:
+            outputs = self.pipe(prompt=prompt, generate_kwargs={"max_new_tokens": max_new_tokens})
+        #return outputs
+        return outputs[0]["generated_text"]#!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    def run_AnyOpenAILLM(self, prompt):
+        return self.model(prompt)
+        print("UNDER CONSTRUCTION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+
+#class ReflectLLM():
+
 
 class ReflexionStrategy(Enum):
     """
@@ -42,13 +98,13 @@ class CoTAgent:
                     reflect_prompt: PromptTemplate = cot_reflect_prompt,
                     cot_examples: str = COT,
                     reflect_examples: str = COT_REFLECT,
-                    self_reflect_llm: AnyOpenAILLM = AnyOpenAILLM(
+                    reflect_llm_: AnyOpenAILLM = AnyOpenAILLM(
                                             temperature=0,
                                             max_tokens=250,
                                             model_name="gpt-3.5-turbo",
                                             model_kwargs={"stop": "\n"},
                                             openai_api_key=os.environ['OPENAI_API_KEY']),
-                    action_llm: AnyOpenAILLM = AnyOpenAILLM(
+                    action_llm_: AnyOpenAILLM = AnyOpenAILLM(
                                             temperature=0,
                                             max_tokens=250,
                                             model_name="gpt-3.5-turbo",
@@ -62,8 +118,8 @@ class CoTAgent:
         self.reflect_prompt = reflect_prompt
         self.cot_examples = cot_examples 
         self.reflect_examples = reflect_examples
-        self.self_reflect_llm = self_reflect_llm
-        self.action_llm = action_llm
+        self.self_reflect_llm = ActionLLM("AnyOpenAILLM", reflect_llm_)
+        self.action_llm = ActionLLM("AnyOpenAILLM", action_llm_)
         self.reflections: List[str] = []
         self.reflections_str = ''
         self.answer = ''
@@ -121,7 +177,7 @@ class CoTAgent:
         print(self.reflections_str)
     
     def prompt_reflection(self) -> str:
-        return format_step(self.self_reflect_llm(self._build_reflection_prompt()))
+        return format_step(self.self_reflect_llm.run(self._build_reflection_prompt()))
 
     def reset(self) -> None:
         
@@ -129,7 +185,7 @@ class CoTAgent:
         self.finished = False
 
     def prompt_agent(self) -> str:
-        return format_step(self.action_llm(self._build_agent_prompt()))
+        return format_step(self.action_llm.run(self._build_agent_prompt()))
     
     def _build_agent_prompt(self) -> str:
         return self.agent_prompt.format(
