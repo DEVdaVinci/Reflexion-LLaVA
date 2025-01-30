@@ -38,9 +38,6 @@ class ActionLLM:
                 )
                 self.model_id = "llava-hf/llava-1.5-7b-hf"
                 self.pipe = pipeline("image-to-text", model=self.model_id, model_kwargs={"quantization_config": self.quantization_config})
-                
-                print("Transformers version:", transformers.__version__)
-                print("Bitsandbytes version:", bitsandbytes.__version__)
                 #!!!!!
             elif modelType == "AnyOpenAILLM":
                 self.model = AnyOpenAILLM(
