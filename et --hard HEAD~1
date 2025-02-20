@@ -1,0 +1,179 @@
+[33m2259f2d[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m)[m Created a modified verison of the CotQA_no_context notebook in hotpotqa_runs folder that is designed to run in colab.
+[33m5b8340e[m Created a modified verison of the CotQA_no_context notebook in hotpotqa_runs folder that is designed to run in colab.
+[33m1ace053[m Created a modified verison of the CotQA_no_context notebook in hotpotqa_runs folder that is designed to run in colab.
+[33mcfb463b[m Created a modified verison of the CotQA_no_context notebook in hotpotqa_runs folder that is designed to run in colab.
+[33m3235290[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Created the ActionLLM class. Instead of only being able to use ChatGPT as an agent any llm that you add to the class can be used instead. So far only LLaVA and ChatGPT are available.
+[33md15acda[m User change
+[33m612e616[m Update instructions
+[33m7fd837d[m Eddie README
+[33m47b2a04[m update
+[33m49485ef[m undo
+[33m9c8dc66[m decent few-shot
+[33m7247f0c[m fix
+[33m468ed1f[m exec
+[33mcc6b8f1[m rstrip codellama
+[33mf748264[m allow to get smol boi or big boi
+[33m0a9ebab[m big boi llama
+[33m45c7f2c[m fix
+[33m872e56c[m a
+[33m1f62bab[m fix parse
+[33m1d70a00[m fix
+[33m3dec2ed[m out extract
+[33m3b2de1a[m fix
+[33mf7d1613[m tensor
+[33m0365be2[m factory
+[33mafcfd42[m code llaam
+[33me5cdf8c[m codellama
+[33mabd6ed5[m woops
+[33mf799068[m fix eos
+[33mbe7fb52[m cahce
+[33m3fec014[m tok
+[33m7470891[m no pipeline
+[33mf42e651[m better design
+[33mc3cfcb8[m upd
+[33m838ec56[m .
+[33m6500135[m fix chat completion
+[33mcf0e1c1[m fix chat completion
+[33m6a295d2[m resume with success count
+[33m7f59165[m aa
+[33m7f7a4c5[m bleh
+[33m8fdf5a9[m starchat formatting
+[33m59db1fb[m fix wrong condition
+[33m7e8b29a[m remove last of challenge set for alfworld
+[33mbe94bc4[m fix code block instruction always python
+[33m510ed00[m fixes #19
+[33m59c84d9[m add code block instruction
+[33mf2720b3[m Implement AnyOpenAILLM for use across completion and chat endpoints (#20)
+[33md0b997e[m add parser
+[33m851b467[m parse code blocks
+[33me085b08[m fix literal import
+[33mf5ac520[m requirements for alfworld
+[33m8a2aa8a[m alfworld chat
+[33mff7bbeb[m better messages
+[33me5c64d9[m better messages
+[33maf69490[m[33m ([m[1;31morigin/starchat[m[33m)[m scripts
+[33m8a03029[m todo
+[33ma8e13b1[m fix simple
+[33m0e45c6a[m Merge pull request #15 from noahshinn024/starchat
+[33m807a065[m todo file
+[33m1c7367f[m Start code parsing and instruction
+[33mb9d2c54[m temp fix
+[33ma9d3470[m use right dtype
+[33m42bcfe7[m change name
+[33m98bd651[m rem dangling import
+[33m020e32f[m fix ciruclar
+[33me60072c[m move gen into class
+[33m97d5190[m reqs for starchat?
+[33maf90f44[m added model class
+[33mdbfc7c6[m runner
+[33mf27481d[m Update README.md
+[33m9a9d7d8[m demos
+[33m0f7a737[m add runscripts
+[33m6a8b75c[m update citation
+[33md876c4c[m Put HotPotQA on top
+[33mc2159d4[m NBs and README
+[33me531a5c[m Organize notebooks
+[33m4924ce4[m add logs
+[33m245fd11[m move benchmarks to their place
+[33mb6a324f[m[33m ([m[1;31morigin/main-private[m[33m)[m start run instructions
+[33m34ab94a[m start run instructions
+[33m5942b44[m HotPotQA runs
+[33m5269ef4[m start v2
+[33m970c487[m reinit submodules
+[33ma98e92b[m reset submodule
+[33m4e42b24[m start v2
+[33m878a144[m alfworld and webshop
+[33m3148695[m note about paper
+[33ma0162a0[m update leetcode hard gym link
+[33md2cdf66[m leetcode-hard gym repo
+[33m9a71c64[m leetcode-hard gym repo
+[33m5b6a1bd[m Merge branch 'py-prompts'
+[33m1eb6519[m Lazy imports for leetcode
+[33m1a8a569[m prompts
+[33mc272801[m Log implementations and test case results
+[33m1dce1f7[m rs hardest 50 results
+[33m94e7bf7[m Prompts
+[33md92b66d[m hardest 50 py results
+[33m17cf55f[m humaneval rs hard50
+[33m56303a3[m script
+[33m8a2fad3[m humaneval py hardest 50 benchmark
+[33m10ae3e5[m fix rate
+[33m818fc53[m Add back dynamic imports
+[33ma774fb7[m Merge branch 'main' of https://github.com/GammaTauAI/reflexion-human-eval-private
+[33m7572abf[m Change timeout handling to error propagating thread
+[33m59e0e30[m Change timeout handling to error propagating thread
+[33m8ea84f3[m fixes to leetexec
+[33m8053a90[m Fixes
+[33m6ea2f63[m remove
+[33m2759fbc[m new scripts
+[33me07aa1d[m dynamic imports
+[33ma427869[m bold
+[33m2900646[m dataeset get
+[33m30c6c5d[m sample of 30
+[33m148e09a[m immediate reflexion
+[33mc527415[m Updated LeetExecutor
+[33mb579fd6[m Handle no == in get_call_str
+[33me9407a6[m run testacc
+[33mb0a37fd[m test acc
+[33m7c6a83c[m .
+[33mb5aec96[m Leetcode Hard: Python3 Benchmark
+[33m95a7a9c[m Merge branch 'leetcode-executor'
+[33m7d24e64[m Stash
+[33m55e7b7d[m Python benchmark
+[33m398a399[m print only if verbose
+[33m39cf170[m testacc and strategy factory
+[33m3bc0617[m LeetExecutor implementation
+[33m94eea44[m LeetExecutor implementation
+[33m23f02ea[m fixed merge
+[33m04a4353[m submodule info
+[33mb1bbee4[m fix merge conflicts
+[33m3dbd2f4[m Merge branch 'main' of https://github.com/GammaTauAI/reflexion-human-eval-private
+[33m80b7c5d[m media imgs
+[33m3157179[m ignore scratch
+[33m72b1389[m Merge branch 'main' of https://github.com/GammaTauAI/reflexion-human-eval-private
+[33m06635b6[m test gen image
+[33m5fd6ff8[m leet shape code
+[33m5b5f300[m .
+[33m5d9a5f2[m .
+[33m963d184[m .
+[33m82ddab4[m .
+[33maea7a5a[m .
+[33mb448a9b[m .
+[33m8609d18[m resume and optz
+[33m4fe89a1[m reflexion
+[33mf6cdc5d[m simple strategy
+[33m812870d[m rerun simple mbpp rs
+[33me88370e[m cleanup
+[33mf2f507f[m exec fix
+[33m9d5f082[m Merge branch 'main' of https://github.com/GammaTauAI/reflexion-human-eval-private
+[33m5f56c08[m .
+[33ma2c9af5[m .
+[33m13e557f[m fix py exe code indentation
+[33m39cc63a[m validate rs
+[33me92714b[m .
+[33mc3772ca[m .
+[33mb3b6507[m .
+[33me245995[m .
+[33mc6e11ac[m If it walks like a duck and it quacks like a duck, then it must be a duck
+[33m826d7af[m .
+[33mc3e18a7[m runs and rs validation
+[33mb71aaea[m runs and rs validation
+[33m3e4f74f[m run
+[33m8f1a188[m prepping for rust
+[33mba79ac7[m rust impl
+[33mb50ca64[m validate
+[33md5664f8[m Merge branch 'main' of https://github.com/GammaTauAI/reflexion-human-eval-private
+[33mafcaeb4[m run
+[33m700742c[m bad logging fixed
+[33mf7ad50a[m syntax check for tests, random sample test selection
+[33m975fc6f[m .
+[33m2223481[m add indentation parse
+[33m985a397[m parse indent correction
+[33mfe5366f[m parse indent
+[33m1ee99df[m working on ucs version of reflexion
+[33m891dbd3[m rerun and prep for rust impl
+[33m8fb8a2c[m link in readme
+[33m6cb4be8[m reamde
+[33m0c73f43[m images
+[33m656c716[m all
+[33ma864881[m Initial commit
