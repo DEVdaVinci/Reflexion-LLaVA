@@ -98,6 +98,8 @@ class CoTAgent:
                     reflect_prompt: PromptTemplate = cot_reflect_prompt,
                     cot_examples: str = COT,
                     reflect_examples: str = COT_REFLECT,
+                    reflectLLM_modelType: str = "AnyOpenAILLM",
+                    actionLLM_modelType: str = "AnyOpenAILLM",
                     reflect_llm_: AnyOpenAILLM = AnyOpenAILLM(
                                             temperature=0,
                                             max_tokens=250,
@@ -118,8 +120,8 @@ class CoTAgent:
         self.reflect_prompt = reflect_prompt
         self.cot_examples = cot_examples 
         self.reflect_examples = reflect_examples
-        self.self_reflect_llm = ActionLLM("AnyOpenAILLM", reflect_llm_)
-        self.action_llm = ActionLLM("AnyOpenAILLM", action_llm_)
+        self.self_reflect_llm = ActionLLM(reflectLLM_modelType, reflect_llm_)
+        self.action_llm = ActionLLM(actionLLM_modelType, action_llm_)
         self.reflections: List[str] = []
         self.reflections_str = ''
         self.answer = ''
