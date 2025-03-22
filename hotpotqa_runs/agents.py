@@ -186,6 +186,7 @@ class CoTAgent:
         self.scratchpad: str = ''
         self.finished = False
 
+    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     def prompt_agent(self) -> str:
         return format_step(self.action_llm.run(self._build_agent_prompt()))
     
@@ -196,19 +197,24 @@ class CoTAgent:
                             context = self.context,
                             question = self.question,
                             scratchpad = self.scratchpad)
-
+    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    
+    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     def _build_reflection_prompt(self) -> str:
         return self.reflect_prompt.format(
                             examples = self.reflect_examples,
                             context = self.context,
                             question = self.question,
                             scratchpad = self.scratchpad)
- 
+    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
     def is_finished(self) -> bool:
         return self.finished
 
+    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     def is_correct(self) -> bool:
         return EM(self.answer, self.key)   
+    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 class ReactAgent:
     def __init__(self,

@@ -19,19 +19,15 @@ def get_args():
                         help="The path to the benchmark dataset", default="root")
     parser.add_argument("--strategy", type=str,
                         help="Strategy: `simple`, `reflexion`")
-    parser.add_argument("--language", type=str, help="Strategy: `py` or `rs`")
+    parser.add_argument("--language", type=str, help="Strategy: `py` or `rs`")#!!!!!!!!!!!!!!!!!!!!!!!
     parser.add_argument(
-        "--model", type=str, help="OpenAI models only for now. For best results, use GPT-4")
+        "--model", type=str, help="LLaVA or an OpenAI model. For best results with OpenAI models, use GPT-4")
     parser.add_argument("--pass_at_k", type=int,
                         help="Pass@k metric", default=1)
     parser.add_argument("--max_iters", type=int,
                         help="The maximum number of self-improvement iterations", default=10)
     parser.add_argument("--expansion_factor", type=int,
                         help="The expansion factor for the reflexion UCS and A* strategy", default=3)
-
-    parser.add_argument("--is_leetcode", action='store_true',
-                        help="To run the leetcode benchmark")  # Temporary
-
     parser.add_argument("--verbose", action='store_true',
                         help="To print live logs")
     # TODO: implement this
