@@ -49,7 +49,7 @@ class StableDiffusionEval_test:
 
         cosine_similarity_CLIP = torch.nn.functional.cosine_similarity(image_og_features, image_generated_features).item()
         if doPrint:
-            print(f"Similarity Score: {cosine_similarity_CLIP:.4f}")
+            print(f"Similarity Score (CLIP): {cosine_similarity_CLIP:.4f}")
 
 
 
@@ -67,7 +67,7 @@ class StableDiffusionEval_test:
         lpips_score_alex = lpips_model_alex(img1, img2).item()
         lpips_simScore_alex = 1 - lpips_score_alex  # Convert to similarity score (higher = more similar)
         if doPrint:
-            print(f"LPIPS Perceptual Similarity Score: {lpips_score_alex}")
+            print(f"LPIPS Perceptual Similarity Score (Alex): {lpips_simScore_alex}")
 
         # Load LPIPS model
         loss_fn_vgg = lpips.LPIPS(net='vgg')  # 'alex', 'vgg', or 'squeeze' network
@@ -75,7 +75,7 @@ class StableDiffusionEval_test:
         lpips_score_vgg = loss_fn_vgg(img1, img2).item()
         lpips_simScore_vgg = 1 - lpips_score_vgg  # Convert to similarity score (higher = more similar)
         if doPrint:
-            print(f"LPIPS Perceptual Similarity: {lpips_score_vgg}")
+            print(f"LPIPS Perceptual Similarity (VGG): {lpips_simScore_vgg}")
 
         # Load LPIPS model
         loss_fn_squeeze = lpips.LPIPS(net='squeeze')  # 'alex', 'vgg', or 'squeeze' network
@@ -83,7 +83,7 @@ class StableDiffusionEval_test:
         lpips_score_squeeze = loss_fn_squeeze(img1, img2).item()
         lpips_simScore_squeeze = 1 - lpips_score_squeeze  # Convert to similarity score (higher = more similar)
         if doPrint:
-            print(f"LPIPS Perceptual Similarity: {lpips_score_squeeze}")
+            print(f"LPIPS Perceptual Similarity (Squeeze): {lpips_simScore_squeeze}")
 
 
         #What are sim scores?
