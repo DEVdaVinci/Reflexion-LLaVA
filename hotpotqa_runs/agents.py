@@ -23,6 +23,8 @@ import torch
 from transformers import BitsAndBytesConfig
 from transformers import pipeline
 
+from evaluation import StableDiffusionEval_test
+
 class ActionLLM:
     def __init__(self, modelType, inModel: None):
         self.modelType = modelType
@@ -37,7 +39,7 @@ class ActionLLM:
                     bnb_4bit_compute_dtype=torch.float16
                 )
                 self.model_id = "llava-hf/llava-1.5-7b-hf"
-                self.pipe = pipeline("image-to-text", model=self.model_id, model_kwargs={"quantization_config": self.quantization_config})
+                self.model = pipeline("image-to-text", model=self.model_id, model_kwargs={"quantization_config": self.quantization_config})
                 #!!!!!
             elif modelType == "AnyOpenAILLM":
                 self.model = AnyOpenAILLM(
@@ -64,9 +66,9 @@ class ActionLLM:
         max_new_tokens = inMaxNewTokens
         prompt = prompt
         if image != None:
-            outputs = self.pipe(image, prompt=prompt, generate_kwargs={"max_new_tokens": max_new_tokens})
+            outputs = self.model(image, prompt=prompt, generate_kwargs={"max_new_tokens": max_new_tokens})
         else:
-            outputs = self.pipe(prompt=prompt, generate_kwargs={"max_new_tokens": max_new_tokens})
+            outputs = self.model(prompt=prompt, generate_kwargs={"max_new_tokens": max_new_tokens})
         #return outputs
         return outputs[0]["generated_text"]#!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     def run_AnyOpenAILLM(self, prompt):
@@ -91,9 +93,9 @@ class ReflexionStrategy(Enum):
 
 class CoTAgent:
     def __init__(self,
-                    question: str,
-                    context: str,
-                    key: str,
+                    question: str,#!!!!!!!!!!!!
+                    context: str,#!!!!!!!!!!!!
+                    key: str,#!!!!!!!!!!!!
                     agent_prompt: PromptTemplate = cot_reflect_agent_prompt,
                     reflect_prompt: PromptTemplate = cot_reflect_prompt,
                     cot_examples: str = COT,
@@ -112,6 +114,7 @@ class CoTAgent:
                                             model_name="gpt-3.5-turbo",
                                             model_kwargs={"stop": "\n"},
                                             openai_api_key=os.environ['OPENAI_API_KEY']),
+                    threshold: float = 0.70,
                     ) -> None:
         self.question = question
         self.context = context
@@ -128,29 +131,30 @@ class CoTAgent:
         self.step_n: int = 0
         self.reset()
 
-    def run(self,
-            reflexion_strategy: ReflexionStrategy = ReflexionStrategy.REFLEXION) -> None:
+    def run(self, reflexion_strategy: ReflexionStrategy = ReflexionStrategy.REFLEXION, inImage) -> None:
+        #Loop until done
         if self.step_n > 0 and not self.is_correct() and reflexion_strategy != ReflexionStrategy.NONE:
             self.reflect(reflexion_strategy)
         self.reset()
-        self.step()
+        self.step(inImage)
         self.step_n += 1
 
-    def step(self) -> None:
+    def step(self, inImage) -> None:
         # Think
         self.scratchpad += f'\nThought:'
-        self.scratchpad += ' ' + self.prompt_agent()
+        self.scratchpad += ' ' + self.prompt_agent(inImage)
         print(self.scratchpad.split('\n')[-1])
 
         # Act
         self.scratchpad += f'\nAction:'
-        action = self.prompt_agent()
+        action = self.prompt_agent(inImage)
         self.scratchpad += ' ' + action
-        action_type, argument = parse_action(action)
+        #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        #action_type, argument = parse_action(action)
         print(self.scratchpad.split('\n')[-1])  
 
         self.scratchpad += f'\nObservation: '
-        if action_type == 'Finish':
+        '''if action_type == 'Finish':
             self.answer = argument
             if self.is_correct():
                 self.scratchpad += 'Answer is CORRECT'
@@ -160,9 +164,16 @@ class CoTAgent:
             return
         else:
             print('Invalid action type, please try again.')
+        '''
+        #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        if self.is_correct(action, inImage):
+            self.scratchpad += 'Answer is CORRECT'
+        else: 
+            self.scratchpad += 'Answer is INCORRECT'
+        self.finished = True
+        
     
-    def reflect(self,
-                strategy: ReflexionStrategy) -> None:
+    def reflect(self, strategy: ReflexionStrategy) -> None:
         print('Running Reflexion strategy...')
         if strategy == ReflexionStrategy.LAST_ATTEMPT:
             self.reflections = [self.scratchpad]
@@ -186,10 +197,18 @@ class CoTAgent:
         self.scratchpad: str = ''
         self.finished = False
 
-    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    def prompt_agent(self) -> str:
-        return format_step(self.action_llm.run(self._build_agent_prompt()))
+
     
+    def prompt_agent(self, inImage) -> str:
+        if(self.model_type == "LLaVA")
+            modelOutput = self.action_llm.run("Generate a prompt thaat could be used to generate a similar image.", inImage)
+        else
+            modelOutput = format_step(self.action_llm.run(self._build_agent_prompt()))
+        return modelOutput
+    
+    
+    
+    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
     def _build_agent_prompt(self) -> str:
         return self.agent_prompt.format(
                             examples = self.cot_examples,
@@ -211,11 +230,19 @@ class CoTAgent:
     def is_finished(self) -> bool:
         return self.finished
 
-    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    def is_correct(self) -> bool:
-        return EM(self.answer, self.key)   
-    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    
+    def is_correct(self, modelOutput, inImage) -> bool:
+        evaluator = StableDiffusionEval_test()
+        similarityScore = evaluator.evaluatePrompt(modelOutput, inImage)
+        
+        if similarityScore > self.threshold
+            return True
+        else
+            return False
+    
 
+
+'''
 class ReactAgent:
     def __init__(self,
                  question: str,
@@ -393,6 +420,8 @@ class ReactReflectAgent(ReactAgent):
                             question = self.question,
                             scratchpad = self.scratchpad)
    
+'''
+
 
 ### String Stuff ###
 gpt2_enc = tiktoken.encoding_for_model("text-davinci-003")
