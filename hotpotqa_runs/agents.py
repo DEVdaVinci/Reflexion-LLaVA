@@ -200,9 +200,9 @@ class CoTAgent:
 
     
     def prompt_agent(self, inImage) -> str:
-        if(self.model_type == "LLaVA")
+        if(self.model_type == "LLaVA"):
             modelOutput = self.action_llm.run("Generate a prompt thaat could be used to generate a similar image.", inImage)
-        else
+        else:
             modelOutput = format_step(self.action_llm.run(self._build_agent_prompt()))
         return modelOutput
     
@@ -235,9 +235,9 @@ class CoTAgent:
         evaluator = StableDiffusionEval_test()
         similarityScore = evaluator.evaluatePrompt(modelOutput, inImage)
         
-        if similarityScore > self.threshold
+        if similarityScore > self.threshold:
             return True
-        else
+        else:
             return False
     
 
