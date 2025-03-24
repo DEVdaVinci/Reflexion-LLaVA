@@ -38,8 +38,8 @@ class StableDiffusionEval_test:
         
         #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-        image_og_features = get_clip_embedding(image_og)
-        image_generated_features = get_clip_embedding(image_generated)
+        image_og_features = self.get_clip_embedding(image_og)
+        image_generated_features = self.get_clip_embedding(image_generated)
 
 
 
@@ -120,9 +120,9 @@ class StableDiffusionEval_test:
 
 
         #MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
-        simpleWeightedAvgSimScore2_alex = simpleWeightedAvg_modified(lpips_simScore_alex, cosine_similarity_CLIP, avgScore)
-        simpleWeightedAvgSimScore2_vgg = simpleWeightedAvg_modified(lpips_simScore_vgg, cosine_similarity_CLIP, avgScore)
-        simpleWeightedAvgSimScore2_squeeze = simpleWeightedAvg_modified(lpips_simScore_squeeze, cosine_similarity_CLIP, avgScore)
+        simpleWeightedAvgSimScore2_alex = self.simpleWeightedAvg_modified(lpips_simScore_alex, cosine_similarity_CLIP, avgScore)
+        simpleWeightedAvgSimScore2_vgg = self.simpleWeightedAvg_modified(lpips_simScore_vgg, cosine_similarity_CLIP, avgScore)
+        simpleWeightedAvgSimScore2_squeeze = self.simpleWeightedAvg_modified(lpips_simScore_squeeze, cosine_similarity_CLIP, avgScore)
         if doPrint:
             print(f"Simple Weighted Average Similarity Score (Alex): {simpleWeightedAvgSimScore2_alex}")
             print(f"Simple Weighted Average Similarity Score (VGG): {simpleWeightedAvgSimScore2_vgg}")
