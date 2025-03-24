@@ -141,7 +141,7 @@ class StableDiffusionEval_test:
 
     def get_clip_embedding(self, inImage):
         image = inImage
-        image = self.preprocess(image).unsqueeze(0).to(device)
+        image = self.preprocess(image).unsqueeze(0).to(self.device)
 
         with torch.no_grad():
             image_features = self.model.encode_image(image)
