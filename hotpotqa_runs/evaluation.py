@@ -3,9 +3,10 @@ from diffusers import DiffusionPipeline
 #similarity metric
 import torch
 import clip
-from PIL import Image
+from PIL import Image #not used
 import torch.nn as nn
 import torchvision.transforms as transforms
+import lpips
 
 class StableDiffusionEval_test:
     def __init__(self):
