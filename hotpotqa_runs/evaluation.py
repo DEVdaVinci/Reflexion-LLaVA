@@ -136,7 +136,7 @@ class StableDiffusionEval_test:
 
         return similarity
 
-    def get_clip_embedding(inImage):
+    def get_clip_embedding(self, inImage):
         image = inImage
         image = preprocess(image).unsqueeze(0).to(device)
 
@@ -144,7 +144,7 @@ class StableDiffusionEval_test:
             image_features = model.encode_image(image)
 
         return image_features / image_features.norm(dim=-1, keepdim=True)  # Normalize
-    def simpleWeightedAvg_modified_og(inScore_LPIPS, inScore_CLIP, inAvgScore, inMultiplier = 4):
+    def simpleWeightedAvg_modified_og(self, inScore_LPIPS, inScore_CLIP, inAvgScore, inMultiplier = 4):
         if inAvgScore > .5:
             #inScore_LPIPS = 0
             inScore_CLIP = inScore_CLIP**(1/inMultiplier)
@@ -153,7 +153,7 @@ class StableDiffusionEval_test:
             inScore_LPIPS = inScore_LPIPS**inMultiplier
             #inScore_CLIP = 0
             return inScore_LPIPS
-    def simpleWeightedAvg_modified(inScore_LPIPS, inScore_CLIP, inAvgScore):
+    def simpleWeightedAvg_modified(self, inScore_LPIPS, inScore_CLIP, inAvgScore):
         inMultiplier = 4*(abs(.5 - inAvgScore)/.5)
         if inAvgScore > .5:
             #inScore_LPIPS = 0
