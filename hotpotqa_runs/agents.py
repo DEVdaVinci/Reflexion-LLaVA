@@ -131,7 +131,7 @@ class CoTAgent:
         self.step_n: int = 0
         self.reset()
 
-    def run(self, reflexion_strategy: ReflexionStrategy = ReflexionStrategy.REFLEXION, inImage) -> None:
+    def run(self, inImage, reflexion_strategy: ReflexionStrategy = ReflexionStrategy.REFLEXION) -> None:
         #Loop until done
         if self.step_n > 0 and not self.is_correct() and reflexion_strategy != ReflexionStrategy.NONE:
             self.reflect(reflexion_strategy)
