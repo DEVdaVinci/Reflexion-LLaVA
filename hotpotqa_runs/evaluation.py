@@ -10,8 +10,8 @@ import torchvision.transforms as transforms
 class StableDiffusionEval_test:
     def __init__(self):
         #self.modelType = modelType
-        self.pipeline = DiffusionPipeline.from_pretrained("runwayml/stable-diffusion-v1-5")
-        self.pipeline.to("cuda")
+        #self.pipeline = DiffusionPipeline.from_pretrained("runwayml/stable-diffusion-v1-5")
+        #self.pipeline.to("cuda")
         #This is necessary for the similarity metric
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model, self.preprocess = clip.load("ViT-B/32", device=self.device)
@@ -20,6 +20,9 @@ class StableDiffusionEval_test:
         similarityScore = self.evaluateGeneratedImage(image_og = originalImage, image_generated = generatedImage)
         return similarityScore
     def generateImage(self, prompt: str):
+        self.pipeline = DiffusionPipeline.from_pretrained("runwayml/stable-diffusion-v1-5")
+        self.pipeline.to("cuda")
+        
         generatedImage = self.pipeline(prompt).images[0]
         return generatedImage
     def evaluateGeneratedImage(self, image_og, image_generated, doPrint = False):
@@ -138,10 +141,10 @@ class StableDiffusionEval_test:
 
     def get_clip_embedding(self, inImage):
         image = inImage
-        image = preprocess(image).unsqueeze(0).to(device)
+        image = self.preprocess(image).unsqueeze(0).to(device)
 
         with torch.no_grad():
-            image_features = model.encode_image(image)
+            image_features = self.model.encode_image(image)
 
         return image_features / image_features.norm(dim=-1, keepdim=True)  # Normalize
     def simpleWeightedAvg_modified_og(self, inScore_LPIPS, inScore_CLIP, inAvgScore, inMultiplier = 4):
