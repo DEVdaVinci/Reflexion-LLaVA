@@ -202,7 +202,7 @@ class CoTAgent:
     def prompt_agent(self, inImage) -> str:
         if(self.actionLLM_modelType == "LLaVA"):
             tempPrompt = "Generate a prompt that could be used to generate a similar image."
-            modelOutput = self.action_llm.run(_build_agent_prompt(inPrompt=tempPrompt), inImage)
+            modelOutput = self.action_llm.run(self._build_agent_prompt(inPrompt=tempPrompt), inImage)
         else:
             modelOutput = format_step(self.action_llm.run(self._build_agent_prompt()))
         return modelOutput
