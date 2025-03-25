@@ -108,6 +108,7 @@ class CoTAgent:
                     reflect_llm_ = None,
                     action_llm_ = None,
                     threshold: float = 0.70,
+                    maxStep: int = 10,
                     doPrint = False,
                     ) -> None:
         self.question = question
@@ -122,6 +123,7 @@ class CoTAgent:
         self.self_reflect_llm = ActionLLM(reflectLLM_modelType, reflect_llm_)
         self.action_llm = ActionLLM(actionLLM_modelType, action_llm_)
         self.threshold = threshold
+        self.maxStep = maxStep
         self.doPrint = doPrint
 
         self.reflections: List[str] = []
@@ -131,13 +133,21 @@ class CoTAgent:
         self.reset()
         
 
-    def run(self, inImage, reflexion_strategy: ReflexionStrategy = ReflexionStrategy.REFLEXION) -> None:
-        #Loop until done
-        if self.step_n > 0 and not self.is_correct() and reflexion_strategy != ReflexionStrategy.NONE:
-            self.reflect(reflexion_strategy)
+    def run(self, inImage, reflexion_strategy: ReflexionStrategy = ReflexionStrategy.REFLEXION, inMaxStep: int = None) -> None:
+        if inMaxStep == None:
+            maxSteps = self.maxStep
+        else
+            maxSteps = inMaxStep
         self.reset()
         self.step(inImage)
         self.step_n += 1
+        #Loop until done
+        #If it is correct after then your done and the following code will never be excecuted
+        while(self.step_n > 0 and self.step_n < maxSteps and not self.is_correct() and reflexion_strategy != ReflexionStrategy.NONE):
+            self.reflect(reflexion_strategy)
+            self.reset()
+            self.step(inImage)
+            self.step_n += 1
 
     def step(self, inImage) -> None:
         # Think
@@ -168,9 +178,13 @@ class CoTAgent:
         #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         if self.is_correct(action, inImage):
             self.scratchpad += 'Answer is CORRECT'
+            print('Answer is CORRECT')
         else: 
             self.scratchpad += 'Answer is INCORRECT'
+            print('Answer is INCORRECT')
         self.finished = True
+        
+        print(f"[Scratch Pad]\n{self.scratchpad.split('\n')[-1]}")
         
     
     def reflect(self, strategy: ReflexionStrategy) -> None:
