@@ -182,8 +182,8 @@ class CoTAgent:
             self.scratchpad += 'Answer is INCORRECT'
             print('Answer is INCORRECT')
         self.finished = True
-        
-        print(f"[Scratch Pad]\n{self.scratchpad.split('\n')[-1]}")
+        tempScratchpad = self.scratchpad.split('\n')[-1]
+        print(f"[Scratch Pad]\n{tempScratchpad}")
         
     
     def reflect(self, strategy: ReflexionStrategy) -> None:
