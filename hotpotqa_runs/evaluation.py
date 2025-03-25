@@ -16,9 +16,9 @@ class StableDiffusionEval_test:
         #This is necessary for the similarity metric
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model, self.preprocess = clip.load("ViT-B/32", device=self.device)
-    def evaluatePrompt(self, prompt, originalImage):
+    def evaluatePrompt(self, prompt, originalImage, doPrint = False):
         generatedImage = self.generateImage(prompt)
-        similarityScore = self.evaluateGeneratedImage(image_og = originalImage, image_generated = generatedImage)
+        similarityScore = self.evaluateGeneratedImage(image_og = originalImage, image_generated = generatedImage, doPrint)
         return similarityScore
     def generateImage(self, prompt: str):
         self.pipeline = DiffusionPipeline.from_pretrained("runwayml/stable-diffusion-v1-5")

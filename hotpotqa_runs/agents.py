@@ -115,6 +115,7 @@ class CoTAgent:
                                             model_kwargs={"stop": "\n"},
                                             openai_api_key=os.environ['OPENAI_API_KEY']),
                     threshold: float = 0.70,
+                    doPrint: False,
                     ) -> None:
         self.question = question
         self.context = context
@@ -130,6 +131,7 @@ class CoTAgent:
         self.answer = ''
         self.step_n: int = 0
         self.reset()
+        self.doPrint = doPrint
 
     def run(self, inImage, reflexion_strategy: ReflexionStrategy = ReflexionStrategy.REFLEXION) -> None:
         #Loop until done
@@ -200,7 +202,7 @@ class CoTAgent:
 
     
     def prompt_agent(self, inImage) -> str:
-        if(self.model_type == "LLaVA"):
+        if(self.actionLLM_modelType == "LLaVA"):
             modelOutput = self.action_llm.run("Generate a prompt thaat could be used to generate a similar image.", inImage)
         else:
             modelOutput = format_step(self.action_llm.run(self._build_agent_prompt()))
@@ -233,7 +235,7 @@ class CoTAgent:
     
     def is_correct(self, modelOutput, inImage) -> bool:
         evaluator = StableDiffusionEval_test()
-        similarityScore = evaluator.evaluatePrompt(modelOutput, inImage)
+        similarityScore = evaluator.evaluatePrompt(modelOutput, inImage, self.doPrint)
         
         if similarityScore > self.threshold:
             return True
