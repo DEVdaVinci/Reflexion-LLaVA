@@ -103,19 +103,9 @@ class CoTAgent:
                     cot_examples: str = COT,
                     reflect_examples: str = COT_REFLECT,
                     reflectLLM_modelType: str = "AnyOpenAILLM",
-                    actionLLM_modelType: str = "AnyOpenAILLM",
-                    reflect_llm_: AnyOpenAILLM = AnyOpenAILLM(
-                                            temperature=0,
-                                            max_tokens=250,
-                                            model_name="gpt-3.5-turbo",
-                                            model_kwargs={"stop": "\n"},
-                                            openai_api_key=os.environ['OPENAI_API_KEY']),
-                    action_llm_: AnyOpenAILLM = AnyOpenAILLM(
-                                            temperature=0,
-                                            max_tokens=250,
-                                            model_name="gpt-3.5-turbo",
-                                            model_kwargs={"stop": "\n"},
-                                            openai_api_key=os.environ['OPENAI_API_KEY']),
+                    actionLLM_modelType: str = "LLaVA",
+                    reflect_llm_: None,
+                    action_llm_: None,
                     threshold: float = 0.70,
                     doPrint = False,
                     ) -> None:
