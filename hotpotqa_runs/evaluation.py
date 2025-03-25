@@ -18,7 +18,7 @@ class StableDiffusionEval_test:
         self.model, self.preprocess = clip.load("ViT-B/32", device=self.device)
     def evaluatePrompt(self, prompt, originalImage, doPrint = False):
         generatedImage = self.generateImage(prompt)
-        similarityScore = self.evaluateGeneratedImage(image_og = originalImage, image_generated = generatedImage, doPrint)
+        similarityScore = self.evaluateGeneratedImage(image_og = originalImage, image_generated = generatedImage, doPrint = doPrint)
         return similarityScore
     def generateImage(self, prompt: str):
         self.pipeline = DiffusionPipeline.from_pretrained("runwayml/stable-diffusion-v1-5")
