@@ -200,22 +200,27 @@ class CoTAgent:
     
     def prompt_agent(self, inImage) -> str:
         if(self.actionLLM_modelType == "LLaVA"):
-            modelOutput = self.action_llm.run("Generate a prompt thaat could be used to generate a similar image.", inImage)
+            tempPrompt = "Generate a prompt that could be used to generate a similar image."
+            modelOutput = self.action_llm.run(_build_agent_prompt(inPrompt=tempPrompt), inImage)
         else:
             modelOutput = format_step(self.action_llm.run(self._build_agent_prompt()))
         return modelOutput
     
     
     
-    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
-    def _build_agent_prompt(self) -> str:
-        return self.agent_prompt.format(
-                            examples = self.cot_examples,
-                            reflections = self.reflections_str,
-                            context = self.context,
-                            question = self.question,
-                            scratchpad = self.scratchpad)
-    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+     
+    def _build_agent_prompt(self, inPrompt: str = None) -> str:
+        if self.actionLLM_modelType == "LLaVA":
+            newPrompt = "USER: <image>\n" + inPrompt + "\nASSISTANT:"
+            return newPrompt
+        else:
+            return self.agent_prompt.format(
+                                examples = self.cot_examples,
+                                reflections = self.reflections_str,
+                                context = self.context,
+                                question = self.question,
+                                scratchpad = self.scratchpad)
+    
     
     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     def _build_reflection_prompt(self) -> str:
