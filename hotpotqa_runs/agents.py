@@ -58,6 +58,7 @@ class ActionLLM:
                     model_kwargs={"stop": "\n"},
                     openai_api_key=os.environ['OPENAI_API_KEY'])
     def run(self, prompt, image = None, inMaxNewTokens = 200):
+        print(f"Running {self.modelType} model with prompt: |{prompt}| ...")
         if(self.modelType == "LLaVA"):
             return self.run_LLaVA(prompt, image, inMaxNewTokens)
         elif(self.modelType == "AnyOpenAILLM"):
@@ -66,8 +67,6 @@ class ActionLLM:
             return self.run_AnyOpenAILLM(prompt)
     def run_LLaVA(self, prompt, image = None, inMaxNewTokens = 200):
         max_new_tokens = inMaxNewTokens
-        prompt = prompt
-        print(f"Prompting model with prompt: |{prompt}| ...")
         if image != None:
             outputs = self.model(image, prompt=prompt, generate_kwargs={"max_new_tokens": max_new_tokens})
         else:
