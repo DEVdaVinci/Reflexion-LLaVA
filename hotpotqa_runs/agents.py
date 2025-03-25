@@ -67,6 +67,7 @@ class ActionLLM:
     def run_LLaVA(self, prompt, image = None, inMaxNewTokens = 200):
         max_new_tokens = inMaxNewTokens
         prompt = prompt
+        print(f"Prompting model with prompt: |{prompt}| ...")
         if image != None:
             outputs = self.model(image, prompt=prompt, generate_kwargs={"max_new_tokens": max_new_tokens})
         else:
