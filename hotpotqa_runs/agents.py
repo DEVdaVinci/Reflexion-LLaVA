@@ -124,14 +124,19 @@ class CoTAgent:
         self.reflect_prompt = reflect_prompt
         self.cot_examples = cot_examples 
         self.reflect_examples = reflect_examples
+        self.reflectLLM_modelType = reflectLLM_modelType
+        self.actionLLM_modelType = actionLLM_modelType
         self.self_reflect_llm = ActionLLM(reflectLLM_modelType, reflect_llm_)
         self.action_llm = ActionLLM(actionLLM_modelType, action_llm_)
+        self.threshold = threshold
+        self.doPrint = doPrint
+        
         self.reflections: List[str] = []
         self.reflections_str = ''
         self.answer = ''
         self.step_n: int = 0
         self.reset()
-        self.doPrint = doPrint
+        
 
     def run(self, inImage, reflexion_strategy: ReflexionStrategy = ReflexionStrategy.REFLEXION) -> None:
         #Loop until done
