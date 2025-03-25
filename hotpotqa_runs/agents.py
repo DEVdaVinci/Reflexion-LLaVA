@@ -142,7 +142,7 @@ class CoTAgent:
         self.step_n += 1
         #Loop until done
         #If it is correct after then your done and the following code will never be excecuted
-        while(self.step_n > 0 and self.step_n < maxSteps and not self.is_correct() and reflexion_strategy != ReflexionStrategy.NONE):
+        while(self.step_n > 0 and self.step_n < maxSteps and not self.is_correct(self.answer, inImage) and reflexion_strategy != ReflexionStrategy.NONE):
             self.reflect(reflexion_strategy)
             self.reset()
             self.step(inImage)
@@ -175,6 +175,7 @@ class CoTAgent:
             print('Invalid action type, please try again.')
         '''
         #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        self.answer = action
         if self.is_correct(action, inImage):
             self.scratchpad += 'Answer is CORRECT'
             print('Answer is CORRECT')
@@ -206,7 +207,6 @@ class CoTAgent:
         return format_step(self.self_reflect_llm.run(self._build_reflection_prompt()))
 
     def reset(self) -> None:
-        
         self.scratchpad: str = ''
         self.finished = False
 
