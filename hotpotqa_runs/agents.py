@@ -104,8 +104,8 @@ class CoTAgent:
                     reflect_examples: str = COT_REFLECT,
                     reflectLLM_modelType: str = "AnyOpenAILLM",
                     actionLLM_modelType: str = "LLaVA",
-                    reflect_llm_: None,
-                    action_llm_: None,
+                    reflect_llm_ = None,
+                    action_llm_ = None,
                     threshold: float = 0.70,
                     doPrint = False,
                     ) -> None:
