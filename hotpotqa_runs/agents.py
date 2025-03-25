@@ -115,7 +115,7 @@ class CoTAgent:
                                             model_kwargs={"stop": "\n"},
                                             openai_api_key=os.environ['OPENAI_API_KEY']),
                     threshold: float = 0.70,
-                    doPrint: False,
+                    doPrint = False,
                     ) -> None:
         self.question = question
         self.context = context
