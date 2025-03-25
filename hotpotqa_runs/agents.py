@@ -135,7 +135,7 @@ class CoTAgent:
     def run(self, inImage, reflexion_strategy: ReflexionStrategy = ReflexionStrategy.REFLEXION, inMaxStep: int = None) -> None:
         if inMaxStep == None:
             maxSteps = self.maxStep
-        else
+        else:
             maxSteps = inMaxStep
         self.reset()
         self.step(inImage)
