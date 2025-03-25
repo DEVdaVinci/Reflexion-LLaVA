@@ -115,6 +115,8 @@ class StableDiffusionEval_test:
 
         avgScore = avgSimScore_alex + avgSimScore_vgg + avgSimScore_squeeze
         avgScore = avgScore/3
+        if doPrint:
+            print(f"avgScore = {avgSimScore_alex}")
 
 
 
@@ -158,7 +160,10 @@ class StableDiffusionEval_test:
             #inScore_CLIP = 0
             return inScore_LPIPS
     def simpleWeightedAvg_modified(self, inScore_LPIPS, inScore_CLIP, inAvgScore):
-        inMultiplier = 4*(abs(.5 - inAvgScore)/.5)
+        #The lowest value of the multiplier is 1
+        #The Highest vaue is 4
+        #If the multiplier has its lowest vaue no boosting occurs
+        inMultiplier = 3*(abs(.5 - inAvgScore)/.5)+1
         if inAvgScore > .5:
             #inScore_LPIPS = 0
             inScore_CLIP = inScore_CLIP**(1/inMultiplier)
