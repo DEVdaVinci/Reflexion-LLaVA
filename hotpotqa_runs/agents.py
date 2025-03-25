@@ -49,6 +49,8 @@ class ActionLLM:
                     model_kwargs={"stop": "\n"},
                     openai_api_key=os.environ['OPENAI_API_KEY'])
             else:
+                print(f"self.model type is: {self.modelType}")
+                print(f"The model type is: {modelType}")
                 self.model = AnyOpenAILLM(
                     temperature=0,
                     max_tokens=250,
@@ -130,7 +132,7 @@ class CoTAgent:
         self.action_llm = ActionLLM(actionLLM_modelType, action_llm_)
         self.threshold = threshold
         self.doPrint = doPrint
-        
+
         self.reflections: List[str] = []
         self.reflections_str = ''
         self.answer = ''
