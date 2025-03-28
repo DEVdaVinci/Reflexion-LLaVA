@@ -111,7 +111,9 @@ class ActionLLM:
             max_tokens=max_new_tokens,
         )
 
-        return response
+        extractedText = response.choices[0].message.content
+
+        return extractedText
     def run_OpenAI(self, inPrompt, inImages = [], inMaxNewTokens = 300):
         if(inMaxNewTokens == None):
             max_new_tokens = 300
@@ -142,7 +144,9 @@ class ActionLLM:
             max_tokens=max_new_tokens,
         )
 
-        return response
+        extractedText = response.choices[0].message.content
+
+        return extractedText
     
 
     
