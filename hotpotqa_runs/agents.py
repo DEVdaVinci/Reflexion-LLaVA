@@ -75,7 +75,7 @@ class ActionLLM:
     def run_LLaVA(self, prompt, image = None, inMaxNewTokens = 200):
         if(inMaxNewTokens == None):
             max_new_tokens = 200
-        else
+        else:
             max_new_tokens = inMaxNewTokens
 
         if image != None:
@@ -90,7 +90,7 @@ class ActionLLM:
     def run_GPT_4o(self, inPrompt, inImages = [], inMaxNewTokens = 300)
         if(inMaxNewTokens == None):
             max_new_tokens = 300
-        else
+        else:
             max_new_tokens = inMaxNewTokens
 
         image_original = inImages[0]
@@ -119,7 +119,7 @@ class ActionLLM:
     def run_OpenAI(self, inPrompt, inImages = [], inMaxNewTokens = 300)
         if(inMaxNewTokens == None):
             max_new_tokens = 300
-        else
+        else:
             max_new_tokens = inMaxNewTokens
 
 
