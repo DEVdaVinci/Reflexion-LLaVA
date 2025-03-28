@@ -222,11 +222,14 @@ class CoTAgent:
         self.reset()
         
 
-    def run(self, inImage, reflexion_strategy: ReflexionStrategy = ReflexionStrategy.REFLEXION, inMaxStep: int = None) -> None:
+    def run(self, inImage, reflexion_strategy: ReflexionStrategy = ReflexionStrategy.REFLEXION, inMaxStep: int = None, inThreshold = None) -> None:
         if inMaxStep == None:
             maxSteps = self.maxStep
         else:
             maxSteps = inMaxStep
+        
+        if inThreshold != None:
+            self.threshold = inThreshold
         print("\n\n===============================================================")
         self.originalImage = inImage
         self.reset()
