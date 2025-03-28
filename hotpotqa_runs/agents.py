@@ -56,19 +56,13 @@ class ActionLLM:
             else:
                 print(f"self.model type is: {self.modelType}")
                 print(f"The model type is: {modelType}")
-                self.model = AnyOpenAILLM(
-                    temperature=0,
-                    max_tokens=250,
-                    model_name="gpt-3.5-turbo",
-                    model_kwargs={"stop": "\n"},
-                    openai_api_key=os.environ['OPENAI_API_KEY'])
     def run(self, inPrompt, inImage = None, inImages = [], inMaxNewTokens = None):
         print(f"\nRunning {self.modelType} model with prompt: |{inPrompt}| ...\n")
         if(self.modelType == "LLaVA"):
             return self.run_LLaVA(inPrompt, inImage, inMaxNewTokens)
         elif(self.modelType == "AnyOpenAILLM"):
             return self.run_AnyOpenAILLM(inPrompt)
-        elif modelType == "gpt-vision":
+        elif self.modelType == "gpt-vision":
             return self.run_GPT_4o(inPrompt, inImages, inMaxNewTokens)
         else:
             return self.run_OpenAI(inPrompt, inImages, inMaxNewTokens)
