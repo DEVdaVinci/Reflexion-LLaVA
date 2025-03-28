@@ -69,7 +69,7 @@ class ActionLLM:
         elif(self.modelType == "AnyOpenAILLM"):
             return self.run_AnyOpenAILLM(inPrompt)
         elif modelType == "gpt-vision":
-            return self.run_GPT_4o(inPrompt, images, inMaxNewTokens)
+            return self.run_GPT_4o(inPrompt, inImages, inMaxNewTokens)
         else:
             return self.run_OpenAI(inPrompt, inImages, inMaxNewTokens)
     def run_LLaVA(self, prompt, image = None, inMaxNewTokens = 200):
@@ -87,7 +87,7 @@ class ActionLLM:
     def run_AnyOpenAILLM(self, prompt):
         return self.model(prompt)
         print("UNDER CONSTRUCTION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-    def run_GPT_4o(self, inPrompt, inImages = [], inMaxNewTokens = 300)
+    def run_GPT_4o(self, inPrompt, inImages = [], inMaxNewTokens = 300):
         if(inMaxNewTokens == None):
             max_new_tokens = 300
         else:
@@ -116,7 +116,7 @@ class ActionLLM:
         )
 
         return response
-    def run_OpenAI(self, inPrompt, inImages = [], inMaxNewTokens = 300)
+    def run_OpenAI(self, inPrompt, inImages = [], inMaxNewTokens = 300):
         if(inMaxNewTokens == None):
             max_new_tokens = 300
         else:
