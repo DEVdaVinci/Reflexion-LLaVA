@@ -27,6 +27,8 @@ from evaluation import StableDiffusionEval_test
 
 from prompts import i2p_reflect_prompt
 import openai
+import base64
+import io
 
 class ActionLLM:
     def __init__(self, modelType, inModel: None):
