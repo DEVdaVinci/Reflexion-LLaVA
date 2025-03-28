@@ -194,6 +194,7 @@ class CoTAgent:
                     action_llm_ = None,
                     threshold: float = 0.70,
                     maxStep: int = 10,
+                    simplePromptMode = True,
                     doPrint = False,
                     ) -> None:
         self.action_task = action_task
@@ -209,6 +210,7 @@ class CoTAgent:
         self.threshold = threshold
         self.maxStep = maxStep
         self.doPrint = doPrint
+        self.simplePromptMode = True
 
         self.reflections: List[str] = []
         self.reflections_str = ''
@@ -253,8 +255,8 @@ class CoTAgent:
         print("_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-")
         #print(self.scratchpad.split('\n')[-1])
         print(f"[Scratch Pad]\n{self.scratchpad}\n\n")
-        tempScratchpad = self.scratchpad.split('\n')[-1]
-        print(f"[Scratch Pad (after self.scratchpad.split('\n')[-1]) (IDK what this is yet)]\n{self.scratchpad}")
+        #tempScratchpad = self.scratchpad.split('\n')[-1]
+        #print(f"[Scratch Pad (after self.scratchpad.split('\n')[-1]) (IDK what this is yet)]\n{self.scratchpad}")
 
         # Act
         self.scratchpad += f'\nAction:'
@@ -266,8 +268,8 @@ class CoTAgent:
         
         #print(self.scratchpad.split('\n')[-1])
         print(f"[Scratch Pad]\n{self.scratchpad}\n\n")
-        tempScratchpad = self.scratchpad.split('\n')[-1]
-        print(f"[Scratch Pad (self.scratchpad.split('\n')[-1]) (IDK what this is yet)]\n{tempScratchpad}")  
+        #tempScratchpad = self.scratchpad.split('\n')[-1]
+        #print(f"[Scratch Pad (self.scratchpad.split('\n')[-1]) (IDK what this is yet)]\n{tempScratchpad}")  
 
         self.scratchpad += f'\nObservation: '
         '''if action_type == 'Finish':
@@ -291,8 +293,8 @@ class CoTAgent:
             print('Answer is INCORRECT')
         self.finished = True
         print(f"[Scratch Pad]\n{self.scratchpad}\n\n")
-        tempScratchpad = self.scratchpad.split('\n')[-1]
-        print(f"[Scratch Pad (self.scratchpad.split('\n')[-1]) (IDK what this is yet)]\n{tempScratchpad}")
+        #tempScratchpad = self.scratchpad.split('\n')[-1]
+        #print(f"[Scratch Pad (self.scratchpad.split('\n')[-1]) (IDK what this is yet)]\n{tempScratchpad}")
         print("-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_")
         
     
@@ -340,15 +342,18 @@ class CoTAgent:
             task = self.action_task
         else:
             task = inPrompt
+
         if self.actionLLM_modelType == "LLaVA":
-            promptFromTemplate = self.agent_prompt.format(
-                                examples = "N/A",
-                                reflections = self.reflections_str,
-                                context = self.context,
-                                action_agent_task = task,
-                                scratchpad = self.scratchpad)
-            newPrompt = "USER: <image>\n" + promptFromTemplate + "\nASSISTANT:"
-            
+            if(self.simplePromptMode == True):
+                newPrompt = "USER: <image>\n" + promptFromTemplate + "\nASSISTANT:"
+            else:
+                promptFromTemplate = self.agent_prompt.format(
+                                    examples = "N/A",
+                                    reflections = self.reflections_str,
+                                    context = self.context,
+                                    action_agent_task = task,
+                                    scratchpad = self.scratchpad)
+                newPrompt = "USER: <image>\n" + promptFromTemplate + "\nASSISTANT:"
         else:
             newPrompt = self.agent_prompt.format(
                                 examples = self.cot_examples,
@@ -360,9 +365,20 @@ class CoTAgent:
     
     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     def _build_reflection_prompt(self) -> str:
+        if(self.simplePromptMode == True):
+            examples = "N/A"
+            context = """The model was given the task of analyzing an input image and generating a prompt that can be used to generate a similar image. Image A is the original and Image B was created using the prompt generated from analyzing the original image.
+
+Image A: <image_1>
+Image B: <image_2>
+"""
+        else:
+            examples = self.reflect_examples
+            context = self.context
+            
         return self.reflect_prompt.format(
-                            examples = self.reflect_examples,
-                            context = self.context,
+                            examples = examples,
+                            context = context,
                             action_agent_task = self.action_task,
                             scratchpad = self.scratchpad)
     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -391,6 +407,8 @@ class CoTAgent:
         if(self.actionLLM_modelType == "LLaVA"):
             tempThought = inThought.split('\n')[-1]
             targetString = "ASSISTANT: "
+            newThought = tempThought.replace(targetString, "")
+            targetString = "Prompt: "
             newThought = tempThought.replace(targetString, "")
             return newThought
         else:
