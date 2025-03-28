@@ -345,7 +345,7 @@ class CoTAgent:
                                 examples = "N/A",
                                 reflections = self.reflections_str,
                                 context = self.context,
-                                question = task,
+                                action_agent_task = task,
                                 scratchpad = self.scratchpad)
             newPrompt = "USER: <image>\n" + promptFromTemplate + "\nASSISTANT:"
             
@@ -354,7 +354,7 @@ class CoTAgent:
                                 examples = self.cot_examples,
                                 reflections = self.reflections_str,
                                 context = self.context,
-                                question = task,
+                                action_agent_task = task,
                                 scratchpad = self.scratchpad)
         return newPrompt
     
@@ -363,7 +363,7 @@ class CoTAgent:
         return self.reflect_prompt.format(
                             examples = self.reflect_examples,
                             context = self.context,
-                            task = self.action_task,
+                            action_agent_task = self.action_task,
                             scratchpad = self.scratchpad)
     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
