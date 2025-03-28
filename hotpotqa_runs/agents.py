@@ -345,7 +345,7 @@ class CoTAgent:
 
         if self.actionLLM_modelType == "LLaVA":
             if(self.simplePromptMode == True):
-                newPrompt = "USER: <image>\n" + promptFromTemplate + "\nASSISTANT:"
+                newPrompt = "USER: <image>\n" + task + "\nASSISTANT:"
             else:
                 promptFromTemplate = self.agent_prompt.format(
                                     examples = "N/A",
