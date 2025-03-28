@@ -86,7 +86,7 @@ cot_reflect_agent_prompt = PromptTemplate(
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 i2p_reflect_agent_prompt = PromptTemplate(
                         input_variables=["examples", "reflections", "context", "action_agent_task", "scratchpad"],
-                        template = COT_AGENT_REFLECT_INSTRUCTION,
+                        template = I2P_AGENT_REFLECT_INSTRUCTION,
                         )
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
