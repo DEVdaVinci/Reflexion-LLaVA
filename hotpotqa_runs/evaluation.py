@@ -19,7 +19,7 @@ class StableDiffusionEval_test:
     def evaluatePrompt(self, prompt, originalImage, doPrint = False):
         generatedImage = self.generateImage(prompt)
         similarityScore = self.evaluateGeneratedImage(image_og = originalImage, image_generated = generatedImage, doPrint = doPrint)
-        return similarityScore
+        return similarityScore, generatedImage
     def generateImage(self, prompt: str):
         self.pipeline = DiffusionPipeline.from_pretrained("runwayml/stable-diffusion-v1-5")
         self.pipeline.to("cuda")

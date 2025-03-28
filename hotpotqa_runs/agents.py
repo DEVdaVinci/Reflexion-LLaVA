@@ -58,7 +58,13 @@ class ActionLLM:
             else:
                 print(f"self.model type is: {self.modelType}")
                 print(f"The model type is: {modelType}")
-    def run(self, inPrompt, inImage = None, inImages = [], inMaxNewTokens = None):
+    def run(self, inPrompt, inImages = [], inMaxNewTokens = None):
+        if(len(inImages) == 0):
+            inImage = None
+        elif(len(inImages) == 1):
+            inImage = inImages[0]
+        else
+            inImage = inImages[1]
         print(f"\nRunning {self.modelType} model with prompt: |{inPrompt}| ...\n")
         if(self.modelType == "LLaVA"):
             return self.run_LLaVA(inPrompt, inImage, inMaxNewTokens)
@@ -210,6 +216,8 @@ class CoTAgent:
         self.reflections_str = ''
         self.answer = ''
         self.step_n: int = 0
+        self.originalImage = None
+        self.generatedImage = None
         self.reset()
         
 
@@ -218,18 +226,21 @@ class CoTAgent:
             maxSteps = self.maxStep
         else:
             maxSteps = inMaxStep
+        self.originalImage = inImage
         self.reset()
-        self.step(inImage)
+        self.step()
         self.step_n += 1
         #Loop until done
         #If it is correct after then your done and the following code will never be excecuted
         while(self.step_n > 0 and self.step_n < maxSteps and not self.is_correct(self.answer, inImage) and reflexion_strategy != ReflexionStrategy.NONE):
             self.reflect(reflexion_strategy)
             self.reset()
-            self.step(inImage)
+            self.step()
             self.step_n += 1
 
-    def step(self, inImage) -> None:
+    def step(self, inImage = None) -> None:
+        if inImage == None:
+            inImage = self.originalImage
         # Think
         self.scratchpad += f'\nThought:'
         self.scratchpad += ' ' + self.prompt_agent(inImage)
@@ -285,18 +296,19 @@ class CoTAgent:
         print(self.reflections_str)
     
     def prompt_reflection(self) -> str:
-        return format_step(self.self_reflect_llm.run(self._build_reflection_prompt()))
+        return format_step(self.self_reflect_llm.run(self._build_reflection_prompt(), [self.originalImage, self.generatedImage]))
 
     def reset(self) -> None:
         self.scratchpad: str = ''
         self.finished = False
+        self.generatedImage = None
 
 
     
     def prompt_agent(self, inImage) -> str:
         if(self.actionLLM_modelType == "LLaVA"):
             tempPrompt = "Generate a prompt that could be used to generate a similar image."
-            modelOutput = self.action_llm.run(self._build_agent_prompt(inPrompt=tempPrompt), inImage)
+            modelOutput = self.action_llm.run(self._build_agent_prompt(inPrompt=tempPrompt), [inImage])
         else:
             modelOutput = format_step(self.action_llm.run(self._build_agent_prompt()))
         return modelOutput
@@ -305,17 +317,27 @@ class CoTAgent:
     
      
     def _build_agent_prompt(self, inPrompt: str = None) -> str:
-        if self.actionLLM_modelType == "LLaVA":
-            newPrompt = "USER: <image>\n" + inPrompt + "\nASSISTANT:"
-            return newPrompt
+        if inPrompt == None:
+            task = self.question
         else:
-            return self.agent_prompt.format(
+            task = inPrompt
+        if self.actionLLM_modelType == "LLaVA":
+            promptFromTemplate = self.agent_prompt.format(
+                                examples = "N/A",
+                                reflections = self.reflections_str,
+                                context = "N/A",
+                                question = task,
+                                scratchpad = self.scratchpad)
+            newPrompt = "USER: <image>\n" + promptFromTemplate + "\nASSISTANT:"
+            
+        else:
+            newPrompt = self.agent_prompt.format(
                                 examples = self.cot_examples,
                                 reflections = self.reflections_str,
                                 context = self.context,
-                                question = self.question,
+                                question = task,
                                 scratchpad = self.scratchpad)
-    
+        return newPrompt
     
     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     def _build_reflection_prompt(self) -> str:
@@ -332,8 +354,15 @@ class CoTAgent:
     
     def is_correct(self, modelOutput, inImage) -> bool:
         evaluator = StableDiffusionEval_test()
-        similarityScore = evaluator.evaluatePrompt(modelOutput, inImage, self.doPrint)
+        similarityScore, outGeneratedImage = evaluator.evaluatePrompt(modelOutput, inImage, self.doPrint)
+        self.generatedImage = outGeneratedImage
         
+        print("Displaying generated image...")
+        print("self.generatedImage.show():")
+        self.generatedImage.show()
+        print("self.generatedImage:")
+        self.generatedImage
+        print("display generated image COMPLETE")
         if similarityScore > self.threshold:
             return True
         else:
