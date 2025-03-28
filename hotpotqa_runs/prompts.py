@@ -40,26 +40,6 @@ Relevant Context: {context}
 Action Agent's Task: {action_agent_task}{scratchpad}
 
 Reflection:"""
-#---------------------------
-
-    
-image_comparison_template = """
-You are an expert in image analysis and prompt refinement.
-
-Context: {context}
-
-Image A: <image_1>
-Image B: <image_2>
-
-{reflection_question}
-"""
-
-
-
-image_comparison_template = PromptTemplate(
-    input_variables=["context", "reflection_question", "image_1", "image_2"],
-    template= image_comparison_template
-)
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
