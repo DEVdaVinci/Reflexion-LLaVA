@@ -103,7 +103,7 @@ class ActionLLM:
                     "role": "user",
                     "content": [
                         {"type": "text", "text": inPrompt},
-                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{image_b64}"},},
+                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{originalImage_b64}"},},
                         {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{generatedImage_b64}"},},
                     ],
                 }
