@@ -144,7 +144,7 @@ class ActionLLM:
     
 
     
-    def encode_image(image):
+    def encode_image(self, image):
         """Encodes a PIL Image object to a base64 string."""
         buffered = io.BytesIO()
         image.save(buffered, format="PNG")  # or "PNG" depending on your image
