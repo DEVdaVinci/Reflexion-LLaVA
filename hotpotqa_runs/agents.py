@@ -25,6 +25,9 @@ from transformers import pipeline
 
 from evaluation import StableDiffusionEval_test
 
+from prompts import i2p_reflect_prompt
+import openai
+
 class ActionLLM:
     def __init__(self, modelType, inModel: None):
         self.modelType = modelType
@@ -48,6 +51,8 @@ class ActionLLM:
                     model_name="gpt-3.5-turbo",
                     model_kwargs={"stop": "\n"},
                     openai_api_key=os.environ['OPENAI_API_KEY'])
+            elif modelType == "gpt-vision":
+                print("gpt-4o was selected")
             else:
                 print(f"self.model type is: {self.modelType}")
                 print(f"The model type is: {modelType}")
@@ -57,16 +62,22 @@ class ActionLLM:
                     model_name="gpt-3.5-turbo",
                     model_kwargs={"stop": "\n"},
                     openai_api_key=os.environ['OPENAI_API_KEY'])
-    def run(self, prompt, image = None, inMaxNewTokens = 200):
-        print(f"Running {self.modelType} model with prompt: |{prompt}| ...")
+    def run(self, inPrompt, inImage = None, inImages = [], inMaxNewTokens = None):
+        print(f"\nRunning {self.modelType} model with prompt: |{inPrompt}| ...\n")
         if(self.modelType == "LLaVA"):
-            return self.run_LLaVA(prompt, image, inMaxNewTokens)
+            return self.run_LLaVA(inPrompt, inImage, inMaxNewTokens)
         elif(self.modelType == "AnyOpenAILLM"):
-            return self.run_AnyOpenAILLM(prompt)
+            return self.run_AnyOpenAILLM(inPrompt)
+        elif modelType == "gpt-vision":
+            return self.run_GPT_4o(inPrompt, images, inMaxNewTokens)
         else:
-            return self.run_AnyOpenAILLM(prompt)
+            return self.run_OpenAI(inPrompt, inImages, inMaxNewTokens)
     def run_LLaVA(self, prompt, image = None, inMaxNewTokens = 200):
-        max_new_tokens = inMaxNewTokens
+        if(inMaxNewTokens == None):
+            max_new_tokens = 200
+        else
+            max_new_tokens = inMaxNewTokens
+
         if image != None:
             outputs = self.model(image, prompt=prompt, generate_kwargs={"max_new_tokens": max_new_tokens})
         else:
@@ -76,6 +87,76 @@ class ActionLLM:
     def run_AnyOpenAILLM(self, prompt):
         return self.model(prompt)
         print("UNDER CONSTRUCTION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    def run_GPT_4o(self, inPrompt, inImages = [], inMaxNewTokens = 300)
+        if(inMaxNewTokens == None):
+            max_new_tokens = 300
+        else
+            max_new_tokens = inMaxNewTokens
+
+        image_original = inImages[0]
+        image_generated = inImages[1]
+        originalImage_b64 = self.encode_image(image_original)
+        generatedImage_b64 = self.encode_image(image_generated)
+
+        openai.api_key = os.environ['OPENAI_API_KEY']
+
+        response = openai.ChatCompletion.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": inPrompt},
+                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{image_b64}"},},
+                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{generatedImage_b64}"},},
+                    ],
+                }
+            ],
+            max_tokens=max_new_tokens,
+        )
+
+        return response
+    def run_OpenAI(self, inPrompt, inImages = [], inMaxNewTokens = 300)
+        if(inMaxNewTokens == None):
+            max_new_tokens = 300
+        else
+            max_new_tokens = inMaxNewTokens
+
+
+
+        promptContent = [{"type": "text", "text": inPrompt}]
+
+        #Add images to content of prompt
+        for img in inImages:
+            img_b64 = self.encode_image(img)
+            promptContent.append({"type": "image_url", "image_url": {"url": f"data:image/png;base64,{img_b64}"},})
+
+
+
+        openai.api_key = os.environ['OPENAI_API_KEY']
+
+        response = openai.ChatCompletion.create(
+            model=self.modelType,
+            messages=[
+                {
+                    "role": "user",
+                    "content": promptContent,
+                }
+            ],
+            max_tokens=max_new_tokens,
+        )
+
+        return response
+    
+
+    
+    def encode_image(image):
+        """Encodes a PIL Image object to a base64 string."""
+        buffered = io.BytesIO()
+        image.save(buffered, format="PNG")  # or "PNG" depending on your image
+        img_str = base64.b64encode(buffered.getvalue()).decode()
+        return img_str
+        
 
 #class ReflectLLM():
 

@@ -29,6 +29,40 @@ Question: {question}{scratchpad}
 
 Reflection:"""
 
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+I2P_REFLECT_INSTRUCTION = """You are an advanced reasoning agent that can improve based on self refection. You are also an expert in image analysis and prompt refinement. You will be given a previous reasoning trial in which you were given access to relevant context and a task to to complete. You were unsuccessful in generating a prompt that can create similar images. Compare and contrast the pair or pairs of images, then give feedback that can be used to create a better prompt and therefore generate more similar images. In a few sentences, Diagnose possible reasons for failure and devise a new, concise, high level plan that aims to mitigate the same failures. Use complete sentences.
+Here are some examples:
+{examples}
+(END OF EXAMPLES)
+
+Previous trial:
+Relevant Context: {context}
+Action Agent's Task: {action_agent_task}{scratchpad}
+
+Reflection:"""
+#---------------------------
+
+    
+image_comparison_template = """
+You are an expert in image analysis and prompt refinement.
+
+Context: {context}
+
+Image A: <image_1>
+Image B: <image_2>
+
+{reflection_question}
+"""
+
+
+
+image_comparison_template = PromptTemplate(
+    input_variables=["context", "reflection_question", "image_1", "image_2"],
+    template= image_comparison_template
+)
+
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 cot_agent_prompt = PromptTemplate(
                         input_variables=["examples", "reflections", "context", "question", "scratchpad"],
                         template = COT_INSTRUCTION,
@@ -44,6 +78,12 @@ cot_reflect_prompt = PromptTemplate(
                         template = COT_REFLECT_INSTRUCTION,
                         )
 
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+i2p_reflect_prompt = PromptTemplate(
+                        input_variables=["examples", "context", "action_agent_task", "scratchpad"],
+                        template = I2P_REFLECT_INSTRUCTION,
+                        )
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 COT_SIMPLE_INSTRUCTION = """Solve a question answering task by having a Thought, then Finish with your answer. Thought can reason about the current situation. Finish[answer] returns the answer and finishes the task.
 Here are some examples:
 {examples}
