@@ -182,9 +182,8 @@ class ReflexionStrategy(Enum):
 
 class CoTAgent:
     def __init__(self,
-                    question: str,#!!!!!!!!!!!!
+                    action_task: str,#!!!!!!!!!!!!
                     context: str,#!!!!!!!!!!!!
-                    key: str,#!!!!!!!!!!!!
                     agent_prompt: PromptTemplate = cot_reflect_agent_prompt,
                     reflect_prompt: PromptTemplate = cot_reflect_prompt,
                     cot_examples: str = COT,
@@ -197,9 +196,8 @@ class CoTAgent:
                     maxStep: int = 10,
                     doPrint = False,
                     ) -> None:
-        self.question = question
+        self.action_task = action_task
         self.context = context
-        self.key = key
         self.agent_prompt = agent_prompt
         self.reflect_prompt = reflect_prompt
         self.cot_examples = cot_examples 
@@ -218,6 +216,7 @@ class CoTAgent:
         self.step_n: int = 0
         self.originalImage = None
         self.generatedImage = None
+        self.generatedImages = []
         self.reset()
         
 
@@ -226,6 +225,7 @@ class CoTAgent:
             maxSteps = self.maxStep
         else:
             maxSteps = inMaxStep
+        print("\n\n===============================================================")
         self.originalImage = inImage
         self.reset()
         self.step()
@@ -234,17 +234,23 @@ class CoTAgent:
         #If it is correct after then your done and the following code will never be excecuted
         while(self.step_n > 0 and self.step_n < maxSteps and not self.is_correct(self.answer, inImage) and reflexion_strategy != ReflexionStrategy.NONE):
             self.reflect(reflexion_strategy)
+            print("---------------------------------------------------------------")
             self.reset()
             self.step()
             self.step_n += 1
-
+        print("===============================================================\n\n")
     def step(self, inImage = None) -> None:
         if inImage == None:
             inImage = self.originalImage
         # Think
         self.scratchpad += f'\nThought:'
         self.scratchpad += ' ' + self.prompt_agent(inImage)
-        print(self.scratchpad.split('\n')[-1])
+        
+        print("_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-")
+        #print(self.scratchpad.split('\n')[-1])
+        print(f"[Scratch Pad]\n{scratchpad}\n\n")
+        tempScratchpad = self.scratchpad.split('\n')[-1]
+        print(f"[Scratch Pad (self.scratchpad.split('\n')[-1]) (IDK what this is yet)]\n{tempScratchpad}")
 
         # Act
         self.scratchpad += f'\nAction:'
@@ -252,7 +258,11 @@ class CoTAgent:
         self.scratchpad += ' ' + action
         #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         #action_type, argument = parse_action(action)
-        print(self.scratchpad.split('\n')[-1])  
+        
+        #print(self.scratchpad.split('\n')[-1])
+        print(f"[Scratch Pad]\n{scratchpad}\n\n")
+        tempScratchpad = self.scratchpad.split('\n')[-1]
+        print(f"[Scratch Pad (self.scratchpad.split('\n')[-1]) (IDK what this is yet)]\n{tempScratchpad}")  
 
         self.scratchpad += f'\nObservation: '
         '''if action_type == 'Finish':
@@ -275,20 +285,22 @@ class CoTAgent:
             self.scratchpad += 'Answer is INCORRECT'
             print('Answer is INCORRECT')
         self.finished = True
+        print(f"[Scratch Pad]\n{scratchpad}\n\n")
         tempScratchpad = self.scratchpad.split('\n')[-1]
-        print(f"[Scratch Pad]\n{tempScratchpad}")
+        print(f"[Scratch Pad (self.scratchpad.split('\n')[-1]) (IDK what this is yet)]\n{tempScratchpad}")
+        print("-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_")
         
     
     def reflect(self, strategy: ReflexionStrategy) -> None:
         print('Running Reflexion strategy...')
         if strategy == ReflexionStrategy.LAST_ATTEMPT:
             self.reflections = [self.scratchpad]
-            self.reflections_str = format_last_attempt(self.question , self.reflections[0])
+            self.reflections_str = format_last_attempt(self.action_task , self.reflections[0])
         elif strategy == ReflexionStrategy.REFLEXION:
             self.reflections += [self.prompt_reflection()]
             self.reflections_str = format_reflections(self.reflections)
         elif strategy == ReflexionStrategy.LAST_ATTEMPT_AND_REFLEXION:
-            self.reflections_str = format_last_attempt(self.question , self.scratchpad)
+            self.reflections_str = format_last_attempt(self.action_task , self.scratchpad)
             self.reflections = [self.prompt_reflection()]
             self.reflections_str += '\n'+ format_reflections(self.reflections, header = REFLECTION_AFTER_LAST_TRIAL_HEADER)
         else:
@@ -301,14 +313,16 @@ class CoTAgent:
     def reset(self) -> None:
         self.scratchpad: str = ''
         self.finished = False
+        if(self.generatedImage != None):
+            self.generatedImages.append(self.generatedImage)
         self.generatedImage = None
 
 
     
     def prompt_agent(self, inImage) -> str:
         if(self.actionLLM_modelType == "LLaVA"):
-            tempPrompt = "Generate a prompt that could be used to generate a similar image."
-            modelOutput = self.action_llm.run(self._build_agent_prompt(inPrompt=tempPrompt), [inImage])
+            #tempPrompt = "Generate a prompt that could be used to generate a similar image."
+            modelOutput = self.action_llm.run(self._build_agent_prompt(), [inImage])
         else:
             modelOutput = format_step(self.action_llm.run(self._build_agent_prompt()))
         return modelOutput
@@ -318,14 +332,14 @@ class CoTAgent:
      
     def _build_agent_prompt(self, inPrompt: str = None) -> str:
         if inPrompt == None:
-            task = self.question
+            task = self.action_task
         else:
             task = inPrompt
         if self.actionLLM_modelType == "LLaVA":
             promptFromTemplate = self.agent_prompt.format(
                                 examples = "N/A",
                                 reflections = self.reflections_str,
-                                context = "N/A",
+                                context = self.context,
                                 question = task,
                                 scratchpad = self.scratchpad)
             newPrompt = "USER: <image>\n" + promptFromTemplate + "\nASSISTANT:"
@@ -344,7 +358,7 @@ class CoTAgent:
         return self.reflect_prompt.format(
                             examples = self.reflect_examples,
                             context = self.context,
-                            question = self.question,
+                            question = self.action_task,
                             scratchpad = self.scratchpad)
     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -576,10 +590,10 @@ def format_reflections(reflections: List[str],
     else:
         return header + 'Reflections:\n- ' + '\n- '.join([r.strip() for r in reflections])
 
-def format_last_attempt(question: str,
+def format_last_attempt(task: str,
                         scratchpad: str,
                         header: str = LAST_TRIAL_HEADER):
-    return header + f'Question: {question}\n' + truncate_scratchpad(scratchpad, tokenizer=gpt2_enc).strip('\n').strip() + '\n(END PREVIOUS TRIAL)\n'
+    return header + f'Task: {task}\n' + truncate_scratchpad(scratchpad, tokenizer=gpt2_enc).strip('\n').strip() + '\n(END PREVIOUS TRIAL)\n'
 
 def truncate_scratchpad(scratchpad: str, n_tokens: int = 1600, tokenizer = gpt2_enc) -> str:
     lines = scratchpad.split('\n')
