@@ -244,18 +244,23 @@ class CoTAgent:
             inImage = self.originalImage
         # Think
         self.scratchpad += f'\nThought:'
-        self.scratchpad += ' ' + self.prompt_agent(inImage)
+
+        self.thought = self.prompt_agent(inImage)
+        thought_formated = self.formatAgentResponse(self.thought)
+        self.scratchpad += ' ' + thought_formated
+        
         
         print("_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-")
         #print(self.scratchpad.split('\n')[-1])
         print(f"[Scratch Pad]\n{self.scratchpad}\n\n")
         tempScratchpad = self.scratchpad.split('\n')[-1]
-        print(f"[Scratch Pad (self.scratchpad.split('\n')[-1]) (IDK what this is yet)]\n{tempScratchpad}")
+        print(f"[Scratch Pad (after self.scratchpad.split('\n')[-1]) (IDK what this is yet)]\n{self.scratchpad}")
 
         # Act
         self.scratchpad += f'\nAction:'
-        action = self.prompt_agent(inImage)
-        self.scratchpad += ' ' + action
+        self.action = self.prompt_agent(inImage)
+        action_formated = self.formatAgentResponse(self.action)
+        self.scratchpad += ' ' + action_formated
         #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         #action_type, argument = parse_action(action)
         
@@ -277,8 +282,8 @@ class CoTAgent:
             print('Invalid action type, please try again.')
         '''
         #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        self.answer = action
-        if self.is_correct(action, inImage):
+        self.answer = self.action
+        if self.is_correct(self.action, inImage):
             self.scratchpad += 'Answer is CORRECT'
             print('Answer is CORRECT')
         else: 
@@ -382,7 +387,14 @@ class CoTAgent:
         else:
             return False
     
-
+    def formatAgentResponse(self, inThought: str) -> str:
+        if(self.actionLLM_modelType == "LLaVA"):
+            tempThought = inThought.split('\n')[-1]
+            targetString = "ASSISTANT: "
+            newThought = tempThought.replace(targetString, "")
+            return newThought
+        else:
+            return inThought
 
 '''
 class ReactAgent:
