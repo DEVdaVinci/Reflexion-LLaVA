@@ -248,7 +248,7 @@ class CoTAgent:
         
         print("_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-")
         #print(self.scratchpad.split('\n')[-1])
-        print(f"[Scratch Pad]\n{scratchpad}\n\n")
+        print(f"[Scratch Pad]\n{self.scratchpad}\n\n")
         tempScratchpad = self.scratchpad.split('\n')[-1]
         print(f"[Scratch Pad (self.scratchpad.split('\n')[-1]) (IDK what this is yet)]\n{tempScratchpad}")
 
@@ -260,7 +260,7 @@ class CoTAgent:
         #action_type, argument = parse_action(action)
         
         #print(self.scratchpad.split('\n')[-1])
-        print(f"[Scratch Pad]\n{scratchpad}\n\n")
+        print(f"[Scratch Pad]\n{self.scratchpad}\n\n")
         tempScratchpad = self.scratchpad.split('\n')[-1]
         print(f"[Scratch Pad (self.scratchpad.split('\n')[-1]) (IDK what this is yet)]\n{tempScratchpad}")  
 
@@ -285,7 +285,7 @@ class CoTAgent:
             self.scratchpad += 'Answer is INCORRECT'
             print('Answer is INCORRECT')
         self.finished = True
-        print(f"[Scratch Pad]\n{scratchpad}\n\n")
+        print(f"[Scratch Pad]\n{self.scratchpad}\n\n")
         tempScratchpad = self.scratchpad.split('\n')[-1]
         print(f"[Scratch Pad (self.scratchpad.split('\n')[-1]) (IDK what this is yet)]\n{tempScratchpad}")
         print("-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_")
