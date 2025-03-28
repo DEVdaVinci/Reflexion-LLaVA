@@ -63,7 +63,7 @@ class ActionLLM:
             inImage = None
         elif(len(inImages) == 1):
             inImage = inImages[0]
-        else
+        else:
             inImage = inImages[1]
         print(f"\nRunning {self.modelType} model with prompt: |{inPrompt}| ...\n")
         if(self.modelType == "LLaVA"):
