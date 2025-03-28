@@ -8,6 +8,16 @@ Here are some examples:
 Relevant Context: {context} 
 Question: {question}{scratchpad}"""
 
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+I2P_INSTRUCTION = """Solve an image to prompt task by having a Thought, then Finish with your created prompt. Thought can reason about the current situation; explain your thought process, as well as explain how and why you created the prompt in the manner that you did. Finish[prompt] returns the actual prompt, which should be capable of being used to generate an equivalent image, and finishes the task. You will be given context that you should use to help you complete the task.
+Here are some examples:
+{examples}
+(END OF EXAMPLES)
+{reflections}
+Relevant Context: {context} 
+Task: {action_agent_task}{scratchpad}"""
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 COT_AGENT_REFLECT_INSTRUCTION = """Solve a question answering task by having a Thought, then Finish with your answer. Thought can reason about the current situation. Finish[answer] returns the answer and finishes the task. You will be given context that you should use to help you answer the question.
 Here are some examples:
 {examples}
@@ -17,6 +27,18 @@ Here are some examples:
 
 Relevant Context: {context}
 Question: {question}{scratchpad}"""
+
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+I2P_AGENT_REFLECT_INSTRUCTION = """Solve an image to prompt task by having a Thought, then Finish with your created prompt. Thought can reason about the current situation, explain your thought process, how and why you created the prompt in the manner that you did. Finish[prompt] returns the prompt and finishes the task. You will be given context that you should use to help you complete the task.
+Here are some examples:
+{examples}
+(END OF EXAMPLES)
+
+{reflections}
+
+Relevant Context: {context}
+Task: {action_agent_task}{scratchpad}"""
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 COT_REFLECT_INSTRUCTION = """You are an advanced reasoning agent that can improve based on self refection. You will be given a previous reasoning trial in which you were given access to relevant context and a question to answer. You were unsuccessful in answering the question either because you guessed the wrong answer with Finish[<answer>] or there is a phrasing discrepancy with your provided answer and the answer key. In a few sentences, Diagnose a possible reason for failure or phrasing discrepancy and devise a new, concise, high level plan that aims to mitigate the same failure. Use complete sentences.  
 Here are some examples:
@@ -37,7 +59,7 @@ Here are some examples:
 
 Previous trial:
 Relevant Context: {context}
-Action Agent's Task: {action_agent_task}{scratchpad}
+Action Agent\'s Task: {action_agent_task}{scratchpad}
 
 Reflection:"""
 
@@ -48,10 +70,25 @@ cot_agent_prompt = PromptTemplate(
                         template = COT_INSTRUCTION,
                         )
 
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+i2p_agent_prompt = PromptTemplate(
+                        input_variables=["examples", "reflections", "context", "action_agent_task", "scratchpad"],
+                        template = I2P_INSTRUCTION,
+                        )
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
 cot_reflect_agent_prompt = PromptTemplate(
                         input_variables=["examples", "reflections", "context", "question", "scratchpad"],
                         template = COT_AGENT_REFLECT_INSTRUCTION,
                         )
+
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+i2p_reflect_agent_prompt = PromptTemplate(
+                        input_variables=["examples", "reflections", "context", "action_agent_task", "scratchpad"],
+                        template = COT_AGENT_REFLECT_INSTRUCTION,
+                        )
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 cot_reflect_prompt = PromptTemplate(
                         input_variables=["examples", "context", "question", "scratchpad"],

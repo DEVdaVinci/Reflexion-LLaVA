@@ -25,7 +25,7 @@ from transformers import pipeline
 
 from evaluation import StableDiffusionEval_test
 
-from prompts import i2p_reflect_prompt
+from prompts import i2p_reflect_prompt, i2p_reflect_agent_prompt
 import openai
 import base64
 import io
@@ -184,8 +184,8 @@ class CoTAgent:
     def __init__(self,
                     action_task: str,#!!!!!!!!!!!!
                     context: str,#!!!!!!!!!!!!
-                    agent_prompt: PromptTemplate = cot_reflect_agent_prompt,
-                    reflect_prompt: PromptTemplate = cot_reflect_prompt,
+                    agent_prompt: PromptTemplate = i2p_reflect_agent_prompt,
+                    reflect_prompt: PromptTemplate = i2p_reflect_prompt,
                     cot_examples: str = COT,
                     reflect_examples: str = COT_REFLECT,
                     reflectLLM_modelType: str = "AnyOpenAILLM",
@@ -363,7 +363,7 @@ class CoTAgent:
         return self.reflect_prompt.format(
                             examples = self.reflect_examples,
                             context = self.context,
-                            question = self.action_task,
+                            task = self.action_task,
                             scratchpad = self.scratchpad)
     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
