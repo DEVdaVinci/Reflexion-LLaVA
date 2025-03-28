@@ -219,6 +219,7 @@ class CoTAgent:
         self.originalImage = None
         self.generatedImage = None
         self.generatedImages = []
+        self.scratchpads = []
         self.reset()
         
 
@@ -243,6 +244,7 @@ class CoTAgent:
             self.reset()
             self.step()
             self.step_n += 1
+        self.reset()
         print("===============================================================\n\n")
     def step(self, inImage = None) -> None:
         if inImage == None:
@@ -321,6 +323,7 @@ class CoTAgent:
         return format_step(self.self_reflect_llm.run(self._build_reflection_prompt(), [self.originalImage, self.generatedImage]))
 
     def reset(self) -> None:
+        self.scratchpads.append(self.scratchpad)
         self.scratchpad: str = ''
         self.finished = False
         if(self.generatedImage != None):
