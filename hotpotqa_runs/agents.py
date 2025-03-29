@@ -415,7 +415,7 @@ class CoTAgent:
             print('Answer is CORRECT')
             return True
         else:
-            self.scratchpad += 'Answer is INCORRECT'
+            self.scratchpad += 'Answer is INCORRECT' + 'Similarity Score: ' +  str(similarityScore) + " (Which failed to surpass the goal of " + str(self.threshold) + ")"
             print('Answer is INCORRECT')
             return False
        
