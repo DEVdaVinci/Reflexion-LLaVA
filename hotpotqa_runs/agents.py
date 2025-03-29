@@ -210,7 +210,7 @@ class CoTAgent:
         self.threshold = threshold
         self.maxStep = maxStep
         self.doPrint = doPrint
-        self.simplePromptMode = True
+        self.simplePromptMode = False
 
         self.reflections: List[str] = []
         self.reflections_str = ''
