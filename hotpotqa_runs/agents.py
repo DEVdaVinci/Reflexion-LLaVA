@@ -261,7 +261,7 @@ class CoTAgent:
         
         print("_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-")
         #print(self.scratchpad.split('\n')[-1])
-        print(f"[Scratch Pad]\n{self.scratchpad}\n\n")
+        #print(f"[Scratch Pad]\n{self.scratchpad}\n\n")
         #tempScratchpad = self.scratchpad.split('\n')[-1]
         #print(f"[Scratch Pad (after self.scratchpad.split('\n')[-1]) (IDK what this is yet)]\n{self.scratchpad}")
 
@@ -275,7 +275,7 @@ class CoTAgent:
         #action_type, argument = parse_action(action)
         
         #print(self.scratchpad.split('\n')[-1])
-        print(f"[Scratch Pad]\n{self.scratchpad}\n\n")
+        #print(f"[Scratch Pad]\n{self.scratchpad}\n\n")
         #tempScratchpad = self.scratchpad.split('\n')[-1]
         #print(f"[Scratch Pad (self.scratchpad.split('\n')[-1]) (IDK what this is yet)]\n{tempScratchpad}")  
 
@@ -293,12 +293,14 @@ class CoTAgent:
         '''
         #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         self.answer = self.action
+        '''
         if self.is_correct(self.action, inImage):
             self.scratchpad += 'Answer is CORRECT'
             print('Answer is CORRECT')
         else: 
             self.scratchpad += 'Answer is INCORRECT'
             print('Answer is INCORRECT')
+        '''
         self.finished = True
         print(f"[Scratch Pad]\n{self.scratchpad}\n\n")
         #tempScratchpad = self.scratchpad.split('\n')[-1]
@@ -408,9 +410,14 @@ Image B: <image_2>
         self.generatedImage
         print("display generated image COMPLETE")
         if similarityScore > self.threshold:
+            self.scratchpad += 'Answer is CORRECT'
+            print('Answer is CORRECT')
             return True
         else:
+            self.scratchpad += 'Answer is INCORRECT'
+            print('Answer is INCORRECT')
             return False
+       
     
     def formatAgentResponse(self, inThought: str) -> str:
         if(self.actionLLM_modelType == "LLaVA"):
