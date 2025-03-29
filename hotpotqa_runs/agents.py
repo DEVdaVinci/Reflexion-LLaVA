@@ -183,7 +183,7 @@ class ReflexionStrategy(Enum):
 class CoTAgent:
     def __init__(self,
                     action_task: str,
-                    reflect_task: str,
+                    reflect_task: str = None,
                     context_agent: str,
                     context_reflection: str,
                     agent_prompt: PromptTemplate = i2p_reflect_agent_prompt,
