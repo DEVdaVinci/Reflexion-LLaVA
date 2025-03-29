@@ -74,7 +74,7 @@ class ActionLLM:
             return self.run_GPT_4o(inPrompt, inImages, inMaxNewTokens)
         else:
             return self.run_OpenAI(inPrompt, inImages, inMaxNewTokens)
-    def run_LLaVA(self, prompt, image = None, inMaxNewTokens = 200):
+    def run_LLaVA(self, prompt, image = None, inMaxNewTokens = 400):
         if(inMaxNewTokens == None):
             max_new_tokens = 200
         else:
@@ -89,7 +89,7 @@ class ActionLLM:
     def run_AnyOpenAILLM(self, prompt):
         return self.model(prompt)
         print("UNDER CONSTRUCTION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-    def run_GPT_4o(self, inPrompt, inImages = [], inMaxNewTokens = 300):
+    def run_GPT_4o(self, inPrompt, inImages = [], inMaxNewTokens = 500):
         if(inMaxNewTokens == None):
             max_new_tokens = 300
         else:
@@ -183,6 +183,7 @@ class ReflexionStrategy(Enum):
 class CoTAgent:
     def __init__(self,
                     action_task: str,
+                    reflect_task: str,
                     context_agent: str,
                     context_reflection: str,
                     agent_prompt: PromptTemplate = i2p_reflect_agent_prompt,
@@ -199,6 +200,7 @@ class CoTAgent:
                     doPrint = False,
                     ) -> None:
         self.action_task = action_task
+        self.reflect_task = reflect_task
         self.context_agent = context_agent
         self.context_reflection = context_reflection
         self.agent_prompt = agent_prompt
