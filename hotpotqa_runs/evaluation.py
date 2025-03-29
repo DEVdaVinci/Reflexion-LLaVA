@@ -159,7 +159,7 @@ class StableDiffusionEval_test:
             inScore_LPIPS = inScore_LPIPS**inMultiplier
             #inScore_CLIP = 0
             return inScore_LPIPS
-    def simpleWeightedAvg_modified(self, inScore_LPIPS, inScore_CLIP, inAvgScore):
+    def simpleWeightedAvg_modified_og2(self, inScore_LPIPS, inScore_CLIP, inAvgScore):
         #The lowest value of the multiplier is 1
         #The Highest vaue is 4
         #If the multiplier has its lowest vaue no boosting occurs
@@ -170,5 +170,14 @@ class StableDiffusionEval_test:
             return inScore_CLIP
         else:
             inScore_LPIPS = inScore_LPIPS**inMultiplier
+            #inScore_CLIP = 0
+            return inScore_LPIPS
+    def simpleWeightedAvg_modified(self, inScore_LPIPS, inScore_CLIP, inAvgScore, inMultiplier = None):
+        if inAvgScore > .5:
+            #inScore_LPIPS = 0
+            inScore_CLIP = inScore_CLIP
+            return inScore_CLIP
+        else:
+            inScore_LPIPS = inScore_LPIPS
             #inScore_CLIP = 0
             return inScore_LPIPS
