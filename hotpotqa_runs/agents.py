@@ -70,7 +70,7 @@ class ActionLLM:
             return self.run_LLaVA(inPrompt, inImage, inMaxNewTokens)
         elif(self.modelType == "AnyOpenAILLM"):
             return self.run_AnyOpenAILLM(inPrompt)
-        elif self.modelType == "gpt-vision":
+        elif self.modelType == "gpt-vision" and len(inImages) == 2:
             return self.run_GPT_4o(inPrompt, inImages, inMaxNewTokens)
         else:
             return self.run_OpenAI(inPrompt, inImages, inMaxNewTokens)
@@ -338,7 +338,7 @@ class CoTAgent:
             #tempPrompt = "Generate a prompt that could be used to generate a similar image."
             modelOutput = self.action_llm.run(self._build_agent_prompt(), [inImage])
         else:
-            modelOutput = format_step(self.action_llm.run(self._build_agent_prompt()))
+            modelOutput = format_step(self.action_llm.run(self._build_agent_prompt(), [inImage]))
         return modelOutput
     
     
