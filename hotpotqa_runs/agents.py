@@ -254,6 +254,7 @@ class CoTAgent:
         self.scratchpad += f'\nThought:'
 
         modelOutput_thought = self.prompt_agent(inImage)
+        print(f"Model output (thought): {modelOutput_thought}")
         self.thought = self.formatAgentResponse(modelOutput_thought)
         self.scratchpad += ' ' + self.thought
         
@@ -267,6 +268,7 @@ class CoTAgent:
         # Act
         self.scratchpad += f'\nAction:'
         modelOutput_action = self.prompt_agent(inImage)
+        print(f"Model output (action): {modelOutput_action}")
         self.action = self.formatAgentResponse(modelOutput_action)
         self.scratchpad += ' ' + self.action
         #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
