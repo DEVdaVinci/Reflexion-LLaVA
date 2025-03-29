@@ -182,23 +182,25 @@ class ReflexionStrategy(Enum):
 
 class CoTAgent:
     def __init__(self,
-                    action_task: str,#!!!!!!!!!!!!
-                    context: str,#!!!!!!!!!!!!
+                    action_task: str,
+                    context_agent: str,
+                    context_reflection: str,
                     agent_prompt: PromptTemplate = i2p_reflect_agent_prompt,
                     reflect_prompt: PromptTemplate = i2p_reflect_prompt,
-                    cot_examples: str = COT,
-                    reflect_examples: str = COT_REFLECT,
+                    cot_examples: str = COT,#!!!!!!!!!!!!!!!!!!!!!!
+                    reflect_examples: str = COT_REFLECT,#!!!!!!!!!!
                     reflectLLM_modelType: str = "AnyOpenAILLM",
                     actionLLM_modelType: str = "LLaVA",
                     reflect_llm_ = None,
                     action_llm_ = None,
-                    threshold: float = 0.70,
-                    maxStep: int = 10,
+                    threshold: float = 0.90,
+                    maxStep: int = 3,
                     simplePromptMode = True,
                     doPrint = False,
                     ) -> None:
         self.action_task = action_task
-        self.context = context
+        self.context_agent = context_agent
+        self.context_reflection = context_reflection
         self.agent_prompt = agent_prompt
         self.reflect_prompt = reflect_prompt
         self.cot_examples = cot_examples 
@@ -221,7 +223,9 @@ class CoTAgent:
         self.generatedImages = []
         self.scratchpad: str = ''
         self.scratchpads = []
+        self.modelOutputs = []
         self.reset()
+        
         
 
     def run(self, inImage, reflexion_strategy: ReflexionStrategy = ReflexionStrategy.REFLEXION, inMaxStep: int = None, inThreshold = None) -> None:
@@ -251,34 +255,30 @@ class CoTAgent:
         if inImage == None:
             inImage = self.originalImage
         # Think
-        self.scratchpad += f'\nThought:'
-
+        
+        print("_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-")
+        
         modelOutput_thought = self.prompt_agent(inImage)
-        print(f"Model output (thought): {modelOutput_thought}")
+        
+        
+        #print(f"Model output (thought): {modelOutput_thought}")
         self.thought = self.formatAgentResponse(modelOutput_thought)
+        self.scratchpad += f'\nThought:'
         self.scratchpad += ' ' + self.thought
         
         
         print("_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-")
-        #print(self.scratchpad.split('\n')[-1])
-        #print(f"[Scratch Pad]\n{self.scratchpad}\n\n")
-        #tempScratchpad = self.scratchpad.split('\n')[-1]
-        #print(f"[Scratch Pad (after self.scratchpad.split('\n')[-1]) (IDK what this is yet)]\n{self.scratchpad}")
-
+        
         # Act
-        self.scratchpad += f'\nAction:'
         modelOutput_action = self.prompt_agent(inImage)
-        print(f"Model output (action): {modelOutput_action}")
+        
         self.action = self.formatAgentResponse(modelOutput_action)
+        self.scratchpad += f'\nAction:'
         self.scratchpad += ' ' + self.action
         #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         #action_type, argument = parse_action(action)
         
-        #print(self.scratchpad.split('\n')[-1])
-        #print(f"[Scratch Pad]\n{self.scratchpad}\n\n")
-        #tempScratchpad = self.scratchpad.split('\n')[-1]
-        #print(f"[Scratch Pad (self.scratchpad.split('\n')[-1]) (IDK what this is yet)]\n{tempScratchpad}")  
-
+        
         self.scratchpad += f'\nObservation: '
         '''if action_type == 'Finish':
             self.answer = argument
@@ -303,9 +303,10 @@ class CoTAgent:
         '''
         self.finished = True
         print(f"[Scratch Pad]\n{self.scratchpad}\n\n")
-        #tempScratchpad = self.scratchpad.split('\n')[-1]
-        #print(f"[Scratch Pad (self.scratchpad.split('\n')[-1]) (IDK what this is yet)]\n{tempScratchpad}")
         print("-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_")
+        tempDict = {"thought": modelOutput_thought, "action": modelOutput_action}
+        self.modelOutputs.append(tempDict)
+        
         
     
     def reflect(self, strategy: ReflexionStrategy) -> None:
@@ -361,7 +362,7 @@ class CoTAgent:
                 promptFromTemplate = self.agent_prompt.format(
                                     examples = "N/A",
                                     reflections = self.reflections_str,
-                                    context = self.context,
+                                    context = self.context_agent,
                                     action_agent_task = task,
                                     scratchpad = self.scratchpad)
                 newPrompt = "USER: <image>\n" + promptFromTemplate + "\nASSISTANT:"
@@ -369,7 +370,7 @@ class CoTAgent:
             newPrompt = self.agent_prompt.format(
                                 examples = self.cot_examples,
                                 reflections = self.reflections_str,
-                                context = self.context,
+                                context = self.context_agent,
                                 action_agent_task = task,
                                 scratchpad = self.scratchpad)
         return newPrompt
@@ -380,12 +381,12 @@ class CoTAgent:
             examples = "N/A"
             context = """The model was given the task of analyzing an input image and generating a prompt that can be used to generate a similar image. Image A is the original and Image B was created using the prompt generated from analyzing the original image.
 
-Image A: <image_1>
-Image B: <image_2>
-"""
+                        Image A: <image_1>
+                        Image B: <image_2>
+                        """
         else:
             examples = self.reflect_examples
-            context = self.context
+            context = self.context_reflection
             
         return self.reflect_prompt.format(
                             examples = examples,
@@ -431,7 +432,7 @@ Image B: <image_2>
                     tempThought = tempThought[targetIndex:]
                 
             newThought = tempThought
-            
+             
             return newThought
         else:
             return inThought
