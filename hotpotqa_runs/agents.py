@@ -421,11 +421,17 @@ Image B: <image_2>
     
     def formatAgentResponse(self, inThought: str) -> str:
         if(self.actionLLM_modelType == "LLaVA"):
-            tempThought = inThought.split('\n')[-1]
-            targetString = "ASSISTANT: "
-            newThought = tempThought.replace(targetString, "")
-            targetString = "Prompt: "
-            newThought = tempThought.replace(targetString, "")
+            tempThought = inThought
+            targetStrings = ["ASSISTANT: ", "PROMPT: ", "Prompt:"]
+            for targetString in targetStrings:
+                startIndex = tempThought.find(targetString)
+                if(startIndex > -1):
+                    lenTarget = len(targetString)
+                    targetIndex = startIndex + lenTarget
+                    tempThought = tempThought[targetIndex:]
+                
+            newThought = tempThought
+            
             return newThought
         else:
             return inThought
