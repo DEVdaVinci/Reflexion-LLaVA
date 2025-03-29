@@ -253,9 +253,9 @@ class CoTAgent:
         # Think
         self.scratchpad += f'\nThought:'
 
-        self.thought = self.prompt_agent(inImage)
-        thought_formated = self.formatAgentResponse(self.thought)
-        self.scratchpad += ' ' + thought_formated
+        modelOutput_thought = self.prompt_agent(inImage)
+        self.thought = self.formatAgentResponse(modelOutput_thought)
+        self.scratchpad += ' ' + self.thought
         
         
         print("_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-")
@@ -266,9 +266,9 @@ class CoTAgent:
 
         # Act
         self.scratchpad += f'\nAction:'
-        self.action = self.prompt_agent(inImage)
-        action_formated = self.formatAgentResponse(self.action)
-        self.scratchpad += ' ' + action_formated
+        modelOutput_action = self.prompt_agent(inImage)
+        self.action = self.formatAgentResponse(modelOutput_action)
+        self.scratchpad += ' ' + self.action
         #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         #action_type, argument = parse_action(action)
         
