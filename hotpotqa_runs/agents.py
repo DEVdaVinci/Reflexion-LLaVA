@@ -272,6 +272,7 @@ class CoTAgent:
         print(f"Model output (thought): {modelOutput_thought}")
         self.thought = self.formatAgentResponse(modelOutput_thought)
         self.scratchpad += f'\nThought:'
+        print(f"Adding processed thought to scratchpad: |{self.thought}|...")
         self.scratchpad += ' ' + self.thought
         
         
@@ -283,6 +284,7 @@ class CoTAgent:
         
         self.action = self.formatAgentResponse(modelOutput_action)
         self.scratchpad += f'\nAction:'
+        print(f"Adding processed action to scratchpad: |{self.action}|...")
         self.scratchpad += ' ' + self.action
         #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         #action_type, argument = parse_action(action)
