@@ -366,7 +366,6 @@ class CoTAgent:
                 newPrompt = "USER: <image>\n" + task + "\nASSISTANT:"
             else:
                 promptFromTemplate = self.agent_prompt.format(
-                                    examples = "N/A",
                                     reflections = self.reflections_str,
                                     context = self.context_agent,
                                     action_agent_task = task,
