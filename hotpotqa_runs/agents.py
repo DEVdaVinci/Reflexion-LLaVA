@@ -434,7 +434,7 @@ class CoTAgent:
     def formatAgentResponse(self, inThought: str) -> str:
         if(self.actionLLM_modelType == "LLaVA"):
             tempThought = inThought
-            targetStrings = ["ASSISTANT: ", "PROMPT: ", "Prompt:", "Thought: ", "Thought:"]
+            targetStrings = ["ASSISTANT: ", "PROMPT: ", "Prompt:", "Thought: ", "Thought:", "Finish[prompt]: "]
             for targetString in targetStrings:
                 startIndex = tempThought.find(targetString)
                 if(startIndex > -1):
