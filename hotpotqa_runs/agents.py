@@ -225,6 +225,7 @@ class CoTAgent:
         self.generatedImage = None
         self.generatedImages = []
         self.scratchpad: str = ''
+        self.previousScratchpad: str = ''
         self.scratchpads = []
         self.modelOutputs = []
         self.reset()
