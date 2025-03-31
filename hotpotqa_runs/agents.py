@@ -261,8 +261,11 @@ class CoTAgent:
         
         print("_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-")
         
+        if self.step_n == 0:
+            self.scratchpad = "N/A (This is the first trial)"
         modelOutput_thought = self.prompt_agent(inImage)
-        
+        if self.step_n == 0:
+            self.scratchpad: str = ''
         
         #print(f"Model output (thought): {modelOutput_thought}")
         self.thought = self.formatAgentResponse(modelOutput_thought)
