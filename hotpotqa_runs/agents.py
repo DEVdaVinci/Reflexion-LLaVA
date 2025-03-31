@@ -373,14 +373,14 @@ class CoTAgent:
                                     reflections = self.reflections_str,
                                     context = self.context_agent,
                                     action_agent_task = task,
-                                    scratchpad = self.scratchpad)
+                                    scratchpad = self.previousScratchpad)
                 newPrompt = "USER: <image>\n" + promptFromTemplate + "\nASSISTANT:"
         else:
             newPrompt = self.agent_prompt.format(
                                 reflections = self.reflections_str,
                                 context = self.context_agent,
                                 action_agent_task = task,
-                                scratchpad = self.scratchpad)
+                                scratchpad = self.previousScratchpad)
         return newPrompt
     
     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -399,7 +399,7 @@ class CoTAgent:
         return self.reflect_prompt.format(
                             context = context,
                             reflect_agent_task = self.reflect_task,
-                            scratchpad = self.scratchpad)
+                            scratchpad = self.previousScratchpad)
     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     def is_finished(self) -> bool:
@@ -431,7 +431,7 @@ class CoTAgent:
     def formatAgentResponse(self, inThought: str) -> str:
         if(self.actionLLM_modelType == "LLaVA"):
             tempThought = inThought
-            targetStrings = ["ASSISTANT: ", "PROMPT: ", "Prompt:", "Thought: "]
+            targetStrings = ["ASSISTANT: ", "PROMPT: ", "Prompt:", "Thought: ", "Thought:"]
             for targetString in targetStrings:
                 startIndex = tempThought.find(targetString)
                 if(startIndex > -1):
