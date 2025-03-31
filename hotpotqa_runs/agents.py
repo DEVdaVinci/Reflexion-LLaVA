@@ -431,22 +431,19 @@ class CoTAgent:
             return False
        
     def formatAgentResponse(self, inThought: str) -> str:
-        if(self.actionLLM_modelType == "LLaVA"):
-            tempThought = inThought
-            targetStrings = ["ASSISTANT: ", "PROMPT: ", "Prompt:", "Thought: ", "Thought:", "Finish[prompt]: "]
-            for targetString in targetStrings:
-                startIndex = tempThought.find(targetString)
-                if(startIndex > -1):
-                    lenTarget = len(targetString)
-                    targetIndex = startIndex + lenTarget
-                    tempThought = tempThought[targetIndex:]
-                
-            newThought = tempThought
-             
-            return newThought
-        else:
-            return inThought
-
+        tempThought = inThought
+        targetStrings = ["ASSISTANT: ", "PROMPT: ", "Prompt:", "Thought: ", "Thought:", "Finish[prompt]: "]
+        for targetString in targetStrings:
+            startIndex = tempThought.find(targetString)
+            if(startIndex > -1):
+                lenTarget = len(targetString)
+                targetIndex = startIndex + lenTarget
+                tempThought = tempThought[targetIndex:]
+            
+        newThought = tempThought
+            
+        return newThought
+        
     def formatAgentResponse_og(self, inThought: str) -> str:
         if(self.actionLLM_modelType == "LLaVA"):
             tempThought = inThought
