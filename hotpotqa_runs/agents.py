@@ -263,20 +263,23 @@ class CoTAgent:
         
         if self.step_n == 0:
             self.scratchpad = "N/A (This is the first trial)"
+        else:
+            self.scratchpad = self.previousScratchpad
+
         modelOutput_thought = self.prompt_agent(inImage)
-        if self.step_n == 0:
-            self.scratchpad: str = ''
+        self.scratchpad: str = ''
         
-        #print(f"Model output (thought): {modelOutput_thought}")
+        print(f"Model output (thought): {modelOutput_thought}")
         self.thought = self.formatAgentResponse(modelOutput_thought)
         self.scratchpad += f'\nThought:'
         self.scratchpad += ' ' + self.thought
         
         
-        print("_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-")
         
         # Act
         modelOutput_action = self.prompt_agent(inImage)
+        print(f"Model output (action): {modelOutput_action}")
+        
         
         self.action = self.formatAgentResponse(modelOutput_action)
         self.scratchpad += f'\nAction:'
@@ -308,10 +311,11 @@ class CoTAgent:
             print('Answer is INCORRECT')
         '''
         self.finished = True
-        print(f"[Scratch Pad]\n{self.scratchpad}\n\n")
         print("-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_")
+        print(f"Finished step!\n[Scratch Pad]\n{self.scratchpad}\n\n")
         tempDict = {"thought": modelOutput_thought, "action": modelOutput_action}
         self.modelOutputs.append(tempDict)
+        self.previousScratchpad = self.scratchpad
         
         
     
@@ -418,7 +422,7 @@ class CoTAgent:
             print('Answer is CORRECT')
             return True
         else:
-            self.scratchpad += 'Answer is INCORRECT' + 'Similarity Score: ' +  str(similarityScore) + " (Which failed to surpass the goal of " + str(self.threshold) + ")"
+            self.scratchpad += 'Answer is INCORRECT!' + ' Similarity Score: ' +  str(similarityScore) + " (Which failed to surpass the goal of " + str(self.threshold) + ")"
             print('Answer is INCORRECT')
             return False
        
