@@ -183,6 +183,7 @@ class ReflexionStrategy(Enum):
 class CoTAgent:
     def __init__(self,
                     action_task: str,
+                    reflect_task: str,
                     context_agent: str,
                     context_reflection: str,
                     agent_prompt: PromptTemplate = i2p_reflect_agent_prompt,
@@ -197,7 +198,7 @@ class CoTAgent:
                     maxStep: int = 3,
                     simplePromptMode = True,
                     doPrint = False,
-                    reflect_task: str = None,
+                    
                     ) -> None:
         self.action_task = action_task
         self.reflect_task = reflect_task
@@ -370,7 +371,6 @@ class CoTAgent:
                 newPrompt = "USER: <image>\n" + promptFromTemplate + "\nASSISTANT:"
         else:
             newPrompt = self.agent_prompt.format(
-                                examples = self.cot_examples,
                                 reflections = self.reflections_str,
                                 context = self.context_agent,
                                 action_agent_task = task,
@@ -380,20 +380,19 @@ class CoTAgent:
     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     def _build_reflection_prompt(self) -> str:
         if(self.simplePromptMode == True):
-            examples = "N/A"
+            #examples = "N/A"
             context = """The model was given the task of analyzing an input image and generating a prompt that can be used to generate a similar image. Image A is the original and Image B was created using the prompt generated from analyzing the original image.
 
                         Image A: <image_1>
                         Image B: <image_2>
                         """
         else:
-            examples = self.reflect_examples
+            #examples = self.reflect_examples
             context = self.context_reflection
             
         return self.reflect_prompt.format(
-                            examples = examples,
                             context = context,
-                            action_agent_task = self.action_task,
+                            reflect_agent_task = self.reflect_task,
                             scratchpad = self.scratchpad)
     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
