@@ -440,7 +440,7 @@ class CoTAgent:
                     targetIndex = startIndex + lenTarget
                     inResponse = tempThought[targetIndex:]
                 
-        inResponse = 
+        
         if(responseType in ["thought", "action"]):
             if(responseType == "thought"):
                 startString = "[Thought Start]"
