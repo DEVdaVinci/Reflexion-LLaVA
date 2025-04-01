@@ -432,6 +432,15 @@ class CoTAgent:
        
     def formatAgentResponse(self, inResponse: str, responseType: str = None) -> str:
         tempResponse = inResponse
+        if(self.actionLLM_modelType == "LLaVA"):
+            targetString = "ASSISTANT: "
+            startIndex = tempThought.find(targetString)
+                if(startIndex > -1):
+                    lenTarget = len(targetString)
+                    targetIndex = startIndex + lenTarget
+                    inResponse = tempThought[targetIndex:]
+                
+        inResponse = 
         if(responseType in ["thought", "action"]):
             if(responseType == "thought"):
                 startString = "[Thought Start]"
