@@ -272,7 +272,7 @@ class CoTAgent:
         
 
         # Think
-        print(f"Model output (thought): {modelOutput}")
+        print(f"Model output: {modelOutput}")
         self.thought = self.formatAgentResponse(modelOutput, "thought")
         self.scratchpad += f'\nThought:'
         print(f"Adding processed thought to scratchpad: |{self.thought}|...")
@@ -281,10 +281,10 @@ class CoTAgent:
         
         
         # Act
-        print(f"Model output (action): {modelOutput_action}")
         
         
-        self.action = self.formatAgentResponse(modelOutput_action)
+        
+        self.action = self.formatAgentResponse(modelOutput, "action")
         self.scratchpad += f'\nAction:'
         print(f"Adding processed action to scratchpad: |{self.action}|...")
         self.scratchpad += ' ' + self.action
@@ -317,8 +317,7 @@ class CoTAgent:
         self.finished = True
         print("-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_")
         print(f"Finished step!\n[Scratch Pad]\n{self.scratchpad}\n\n")
-        tempDict = {"thought": modelOutput_thought, "action": modelOutput_action}
-        self.modelOutputs.append(tempDict)
+        self.modelOutputs.append(modelOutput)
         self.previousScratchpad = self.scratchpad
         
         
@@ -457,7 +456,7 @@ class CoTAgent:
             newResponse = tempResponse
             
         return newResponse
-    def extractResponse():
+    
         
     def formatAgentResponse_og(self, inThought: str) -> str:
         if(self.actionLLM_modelType == "LLaVA"):
