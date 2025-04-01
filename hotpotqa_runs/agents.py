@@ -434,12 +434,12 @@ class CoTAgent:
         tempResponse = inResponse
         if(self.actionLLM_modelType == "LLaVA"):
             targetString = "ASSISTANT: "
-            startIndex = tempThought.find(targetString)
+            startIndex = tempResponse.find(targetString)
             if(startIndex > -1):
                 lenTarget = len(targetString)
                 targetIndex = startIndex + lenTarget
-                inResponse = tempThought[targetIndex:]
-                tempThought = inResponse
+                inResponse = tempResponse[targetIndex:]
+                tempResponse = inResponse
 
                 
         
