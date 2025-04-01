@@ -258,7 +258,7 @@ class CoTAgent:
     def step(self, inImage = None) -> None:
         if inImage == None:
             inImage = self.originalImage
-        # Think
+        
         
         print("_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-")
         
@@ -267,11 +267,13 @@ class CoTAgent:
         else:
             self.scratchpad = self.previousScratchpad
 
-        modelOutput_thought = self.prompt_agent(inImage)
+        modelOutput = self.prompt_agent(inImage)
         self.scratchpad: str = ''
         
-        print(f"Model output (thought): {modelOutput_thought}")
-        self.thought = self.formatAgentResponse(modelOutput_thought)
+
+        # Think
+        print(f"Model output (thought): {modelOutput}")
+        self.thought = self.formatAgentResponse(modelOutput, "thought")
         self.scratchpad += f'\nThought:'
         print(f"Adding processed thought to scratchpad: |{self.thought}|...")
         self.scratchpad += ' ' + self.thought
@@ -279,7 +281,6 @@ class CoTAgent:
         
         
         # Act
-        modelOutput_action = self.prompt_agent(inImage)
         print(f"Model output (action): {modelOutput_action}")
         
         
@@ -430,19 +431,33 @@ class CoTAgent:
             self.previousScratchpad = self.scratchpad
             return False
        
-    def formatAgentResponse(self, inThought: str) -> str:
-        tempThought = inThought
-        targetStrings = ["ASSISTANT: ", "PROMPT: ", "Prompt:", "Thought: ", "Thought:", "Finish[prompt]: "]
-        for targetString in targetStrings:
-            startIndex = tempThought.find(targetString)
-            if(startIndex > -1):
-                lenTarget = len(targetString)
-                targetIndex = startIndex + lenTarget
-                tempThought = tempThought[targetIndex:]
+    def formatAgentResponse(self, inResponse: str, responseType: str = None) -> str:
+        tempResponse = inResponse
+        if(responseType in ["thought", "action"]):
+            if(responseType == "thought"):
+                startString = "[Thought Start]"
+                endString = "[Thought End]"
+            elif(responseType == "action"):
+                startString = "[Prompt Start]"
+                endString = "[Prompt End]"
             
-        newThought = tempThought
+            startIndex = inResponse.find(startString) + len(startString)
+            endIndex = inResponse.find(endString)
+
+            newResponse = inResponse[startIndex:endIndex]
+        else:
+            targetStrings = ["ASSISTANT: ", "PROMPT: ", "Prompt:", "Thought: ", "Thought:", "Finish[prompt]: "]
+            for targetString in targetStrings:
+                startIndex = tempResponse.find(targetString)
+                if(startIndex > -1):
+                    lenTarget = len(targetString)
+                    targetIndex = startIndex + lenTarget
+                    tempResponse = tempResponse[targetIndex:]
+                
+            newResponse = tempResponse
             
-        return newThought
+        return newResponse
+    def extractResponse():
         
     def formatAgentResponse_og(self, inThought: str) -> str:
         if(self.actionLLM_modelType == "LLaVA"):
