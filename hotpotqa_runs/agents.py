@@ -52,41 +52,37 @@ class LLaVA_ModelSettings(ModelSettings):
 
 
 class ActionLLM:
-    def __init__(self, modelType, inModel = None):
+    def __init__(self, modelType):
         self.modelType = modelType
-        
-        
-        if inModel != None:
-            self.model = inModel
+
+        if modelType == "LLaVA":
+            self.model_id = "llava-hf/llava-1.5-7b-hf"
+            self.settings = LLaVA_ModelSettings(type = self.modelType, name = "LLaVA", temperature = None, load_in_4bit = True, bnb_4bit_compute_dtype = torch.float16, model_id = "llava-hf/llava-1.5-7b-hf")
+            
+            #!!!!!
+            self.quantization_config = BitsAndBytesConfig(
+                load_in_4bit=self.settings.load_in_4bit,
+                bnb_4bit_compute_dtype=self.settings.bnb_4bit_compute_dtype
+            )
+            
+            self.settings.kwargs = {"quantization_config": self.quantization_config}
+            self.model = pipeline("image-to-text", model=self.settings.model_id, model_kwargs=self.settings.kwargs)
+            #!!!!!
+        elif modelType == "AnyOpenAILLM":
+            self.settings = ModelSettings(type = self.modelType, name = "gpt-3.5-turbo", temperature = 0, maxTokens = 250)
+            self.settings.kwargs = {"stop": "\n"}
+            self.model = AnyOpenAILLM(
+                temperature=self.settings.temperature,
+                max_tokens=self.settings.maxTokens,
+                model_name=self.settings.name,
+                model_kwargs=self.settings.kwargs,
+                openai_api_key=os.environ['OPENAI_API_KEY'])
+        elif modelType == "gpt-vision":
+            self.settings = ModelSettings(type = self.modelType, name = "gpt-4o")
+            print("gpt-4o was selected")
         else:
-            if modelType == "LLaVA":
-                self.model_id = "llava-hf/llava-1.5-7b-hf"
-                self.settings = LLaVA_ModelSettings(type = self.modelType, name = "LLaVA", temperature = None, load_in_4bit = True, bnb_4bit_compute_dtype = torch.float16, model_id = "llava-hf/llava-1.5-7b-hf")
-                
-                #!!!!!
-                self.quantization_config = BitsAndBytesConfig(
-                    load_in_4bit=self.settings.load_in_4bit,
-                    bnb_4bit_compute_dtype=self.settings.bnb_4bit_compute_dtype
-                )
-                
-                self.settings.kwargs = {"quantization_config": self.quantization_config}
-                self.model = pipeline("image-to-text", model=self.settings.model_id, model_kwargs=self.settings.kwargs)
-                #!!!!!
-            elif modelType == "AnyOpenAILLM":
-                self.settings = ModelSettings(type = self.modelType, name = "gpt-3.5-turbo", temperature = 0, maxTokens = 250)
-                self.settings.kwargs = {"stop": "\n"}
-                self.model = AnyOpenAILLM(
-                    temperature=self.settings.temperature,
-                    max_tokens=self.settings.maxTokens,
-                    model_name=self.settings.name,
-                    model_kwargs=self.settings.kwargs,
-                    openai_api_key=os.environ['OPENAI_API_KEY'])
-            elif modelType == "gpt-vision":
-                self.settings = ModelSettings(type = self.modelType, name = "gpt-4o")
-                print("gpt-4o was selected")
-            else:
-                print(f"self.model type is: {self.modelType}")
-                print(f"The model type is: {modelType}")
+            print(f"self.model type is: {self.modelType}")
+            print(f"The model type is: {modelType}")
     def run(self, inPrompt, inImages = [], inMaxNewTokens = None):
         if(len(inImages) == 0):
             inImage = None
@@ -228,8 +224,6 @@ class CoTAgent:
                     reflect_examples: str = COT_REFLECT,#!!!!!!!!!!
                     reflectLLM_modelType: str = "AnyOpenAILLM",
                     actionLLM_modelType: str = "LLaVA",
-                    reflect_llm_ = None,
-                    action_llm_ = None,
                     threshold: float = 0.90,
                     maxStep: int = 3,
                     simplePromptMode = True,
@@ -247,8 +241,8 @@ class CoTAgent:
         self.reflect_examples = reflect_examples
         self.reflectLLM_modelType = reflectLLM_modelType
         self.actionLLM_modelType = actionLLM_modelType
-        self.self_reflect_llm = ActionLLM(reflectLLM_modelType, reflect_llm_)
-        self.action_llm = ActionLLM(actionLLM_modelType, action_llm_)
+        self.self_reflect_llm = ActionLLM(reflectLLM_modelType)
+        self.action_llm = ActionLLM(actionLLM_modelType)
         self.threshold = threshold
         self.maxStep = maxStep
         self.doPrint = doPrint
