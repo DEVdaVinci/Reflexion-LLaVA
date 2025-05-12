@@ -986,7 +986,7 @@ class StepReport:
         
         self.output_image_path = output_image_path
         
-        if output_image_sha256 == None:
+        if output_image_sha256 == None and output_image_path != None:
             self.output_image_sha256 = getImageHash(output_image_path)
         else:
             self.output_image_sha256 = output_image_sha256
