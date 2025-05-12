@@ -35,7 +35,7 @@ import pandas
 from PIL import Image
 
 class ModelSettings:
-    def __init__(self, type, name, temperature: None, maxTokens: None, kwargs: None):
+    def __init__(self, type, name, temperature = None, maxTokens = None, kwargs = None):
         self.type = type
         self.name = name
         self.temperature = temperature
@@ -44,7 +44,7 @@ class ModelSettings:
 
 
 class LLaVA_ModelSettings(ModelSettings):
-    def __init__(self, load_in_4bit: None, bnb_4bit_compute_dtype: None, model_id: None):
+    def __init__(self, load_in_4bit = None, bnb_4bit_compute_dtype = None, model_id = None):
         self.load_in_4bit = load_in_4bit
         self.bnb_4bit_compute_dtype = bnb_4bit_compute_dtype
         self.model_id = model_id
@@ -52,7 +52,7 @@ class LLaVA_ModelSettings(ModelSettings):
 
 
 class ActionLLM:
-    def __init__(self, modelType, inModel: None):
+    def __init__(self, modelType, inModel = None):
         self.modelType = modelType
         
         
@@ -826,7 +826,7 @@ def getImageHash(inFilename):
 
 
 class ReportOfRun:
-    def __init__(self, reportOfRun_path, image_path, run_id: None, duration: None, start_timestamp: None, end_timestamp: None, image_id: None, image_path_PLACEHOLDER: None, threshold: None, max_steps: None, agent_model_type: None, agent_model_name: None, agent_model_setting_temperature: None, agent_model_setting_max_tokens: None, agent_model_setting_misc: None, reflection_model_type: None, reflection_model_name: None, reflection_model_setting_temperature: None, reflection_model_setting_max_tokens: None, reflection_model_setting_misc: None, agent_prompt_template: None, reflection_prompt_template: None, is_successful: None, run_feedback: None):
+    def __init__(self, reportOfRun_path, image_path, run_id= None, duration= None, start_timestamp= None, end_timestamp= None, image_id= None, image_path_PLACEHOLDER= None, threshold= None, max_steps= None, agent_model_type= None, agent_model_name= None, agent_model_setting_temperature= None, agent_model_setting_max_tokens= None, agent_model_setting_misc= None, reflection_model_type= None, reflection_model_name= None, reflection_model_setting_temperature= None, reflection_model_setting_max_tokens= None, reflection_model_setting_misc= None, agent_prompt_template= None, reflection_prompt_template= None, is_successful= None, run_feedback= None):
         self.timestamp = pandas.Timestamp.now(tz="UTC")
 
         self.reportOfRun_path = reportOfRun_path
@@ -863,73 +863,6 @@ class ReportOfRun:
         self.reflection_prompt_template = reflection_prompt_template
         self.is_successful = is_successful
         self.run_feedback = run_feedback
-
-    def setValues(self, run_id: None, duration: None, start_timestamp: None, end_timestamp: None, image_id: None, image_path: None, threshold: None, max_steps: None, agent_model_type: None, agent_model_name: None, agent_model_setting_temperature: None, agent_model_setting_max_tokens: None, agent_model_setting_misc: None, reflection_model_type: None, reflection_model_name: None, reflection_model_setting_temperature: None, reflection_model_setting_max_tokens: None, reflection_model_setting_misc: None, agent_prompt_template: None, reflection_prompt_template: None, is_successful: None, run_feedback: None):
-        if run_id != None:
-            self.run_id = run_id
-        
-        if duration != None:
-            self.duration = duration
-        
-        if start_timestamp != None:
-            self.start_timestamp = start_timestamp
-        
-        if end_timestamp != None:
-            self.end_timestamp = end_timestamp
-        
-        if image_id != None:
-            self.image_id = image_id
-        
-        if image_path != None:
-            self.image_path = image_path
-        
-        if threshold != None:
-            self.threshold = threshold
-        
-        if max_steps != None:
-            self.max_steps = max_steps
-        
-        if agent_model_type != None:
-            self.agent_model_type = agent_model_type
-        
-        if agent_model_name != None:
-            self.agent_model_name = agent_model_name
-        
-        if agent_model_setting_temperature != None:
-            self.agent_model_setting_temperature = agent_model_setting_temperature
-        
-        if agent_model_setting_max_tokens != None:
-            self.agent_model_setting_max_tokens = agent_model_setting_max_tokens
-        
-        if agent_model_setting_misc != None:
-            self.agent_model_setting_misc = agent_model_setting_misc
-        
-        if reflection_model_type != None:
-            self.reflection_model_type = reflection_model_type
-        
-        if reflection_model_name != None:
-            self.reflection_model_name = reflection_model_name
-        
-        if reflection_model_setting_temperature != None:
-            self.reflection_model_setting_temperature = reflection_model_setting_temperature
-        
-        if reflection_model_setting_max_tokens != None:
-            self.reflection_model_setting_max_tokens = reflection_model_setting_max_tokens
-        
-        if reflection_model_setting_misc != None:
-            self.reflection_model_setting_misc = reflection_model_setting_misc
-        
-        if agent_prompt_template != None:
-            self.agent_prompt_template = agent_prompt_template
-        
-        if reflection_prompt_template != None:
-            self.reflection_prompt_template = reflection_prompt_template
-        
-        if is_successful != None:
-            self.is_successful = is_successful
-        
-        if run_feedback != None:
-            self.run_feedback = run_feedback
 
     def setRunID(self):
         self.run_id = TimestampToStr(self.start_timestamp) + TimestampToStr(self.end_timestamp)
