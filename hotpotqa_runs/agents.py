@@ -873,7 +873,7 @@ class ReportOfRun:
             self.duration = self.end_timestamp - self.start_timestamp
 
         if self.run_id == None:
-            self.run_id = self.setRunID()
+            self.setRunID()
         
         self.dictionary = {
             'run_id': [self.run_id],
