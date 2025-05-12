@@ -1003,9 +1003,6 @@ class StepReport:
         
         
         
-        self.start_timestamp = start_timestamp
-        self.end_timestamp = end_timestamp
-        self.duration = duration
         self.agent_prompt = agent_prompt
         self.agent_response = agent_response
         self.reflection_prompt = reflection_prompt
