@@ -398,7 +398,7 @@ class CoTAgent:
         self.stepReport.is_successful = self.is_correct(self.answer, inImage)
         #similarity_score is calculated in the process of running is_correct()
         self.stepReport.similarity_score = self.similarityScore
-        self.generatedImagePath = self.calcGeneratedImagePath(self.generatedImageFolder, self.originalImageFilename)
+        self.calcGeneratedImagePath(self.generatedImageFolder, self.originalImageFilename)
         #save image
         self.generatedImage.save(self.generatedImagePath, format='PNG')
         self.stepReport.output_image_path = self.generatedImagePath
@@ -624,8 +624,7 @@ class CoTAgent:
     def calcGeneratedImagePath(self, inPathTogeneratedImageFolder,inInputImageFilename, miscText = ""):
         currTimestamp = pandas.Timestamp.now(tz="UTC")
         timestamp_str = currTimestamp.strftime("%Y%m%d%H%M%S%f")
-        outputImagePath = inPathTogeneratedImageFolder + inInputImageFilename + "-generatedImage_" + timestamp_str + miscText + ".png"
-        
+        self.generatedImagePath = inPathTogeneratedImageFolder + inInputImageFilename + "-generatedImage_" + timestamp_str + miscText + ".png"
 
 
 '''
