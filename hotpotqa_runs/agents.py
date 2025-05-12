@@ -902,7 +902,7 @@ class ReportOfRun:
     def createDataFrame(self):
         self.createDictionary()
         self.dataFrame = pandas.DataFrame(self.dictionary)
-        self.dataFrame.set_index('run_id')
+        self.dataFrame.set_index('run_id', inplace=True)
 
     def save(self, addIndexCol = True, addHeader = False):
         self.createDataFrame()
