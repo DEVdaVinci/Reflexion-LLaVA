@@ -317,7 +317,7 @@ class CoTAgent:
         print("===============================================================\n\n")
     def step(self, inImage = None) -> None:
 
-        self.stepReport = StepReport(stepReport_path = self.stepReport_path, step = self.step_n, output_image_sha256 = None, start_timestamp = None, end_timestamp = None, duration = None, agent_prompt = None, agent_response = None, reflection_prompt = None, reflection_response = None, similarity_score = None, is_successful = None, step_feedback = None)
+        self.stepReport = StepReport(stepReport_path = self.stepReport_path, step = self.step_n)
 
         if inImage == None:
             inImage = self.originalImage
@@ -333,6 +333,7 @@ class CoTAgent:
         modelOutput = self.prompt_agent(inImage)
         self.scratchpad: str = ''
         
+        self.stepReport.agent_response = modelOutput
 
         # Think
         print(f"Model output: {modelOutput}")
@@ -383,12 +384,20 @@ class CoTAgent:
         self.modelOutputs.append(modelOutput)
         self.previousScratchpad = self.scratchpad
         
+
+        
+
+        
         #save image
         self.generatedImage.save(self.generatedImagePath, format='PNG')
         self.stepReport.output_image_path = self.generatedImagePath
-        #= self.similarityScore
+        self.stepReport.is_successful = self.is_correct(self.answer, inImage)
+        #similarity_score is calculated in the process of running is_correct()
+        self.stepReport.similarity_score = self.similarityScore
+        
 
         self.step_reports.append(self.stepReport)
+
     
     def reflect(self, strategy: ReflexionStrategy) -> None:
         print('Running Reflexion strategy...')
@@ -407,7 +416,9 @@ class CoTAgent:
         print(self.reflections_str)
     
     def prompt_reflection(self) -> str:
-        return format_step(self.self_reflect_llm.run(self._build_reflection_prompt(), [self.originalImage, self.generatedImage]))
+        self.stepReport.reflection_prompt = self._build_reflection_prompt()
+        self.stepReport.reflection_response = format_step(self.self_reflect_llm.run(self.stepReport.reflection_prompt, [self.originalImage, self.generatedImage]))
+        return self.stepReport.reflection_response
 
     def reset(self) -> None:
         self.scratchpads.append(self.scratchpad)
@@ -423,9 +434,11 @@ class CoTAgent:
     def prompt_agent(self, inImage) -> str:
         if(self.actionLLM_modelType == "LLaVA"):
             #tempPrompt = "Generate a prompt that could be used to generate a similar image."
-            modelOutput = self.action_llm.run(self._build_agent_prompt(), [inImage])
+            self.stepReport.agent_prompt = self._build_agent_prompt()
+            modelOutput = self.action_llm.run(self.stepReport.agent_prompt, [inImage])
         else:
-            modelOutput = format_step(self.action_llm.run(self._build_agent_prompt(), [inImage]))
+            self.stepReport.agent_prompt = self._build_agent_prompt()
+            modelOutput = format_step(self.action_llm.run(self.stepReport.agent_prompt, [inImage]))
         return modelOutput
     
     
