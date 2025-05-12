@@ -553,7 +553,7 @@ class CoTAgent:
         print("display generated image COMPLETE")
 
     def is_correct(self, modelOutput, inImage) -> bool:   
-        self.calcSimScoreAndOutImage(self, modelOutput, inImage)
+        self.calcSimScoreAndOutImage(modelOutput, inImage)
 
         if self.similarityScore > self.threshold:
             self.scratchpad += 'Answer is CORRECT'
