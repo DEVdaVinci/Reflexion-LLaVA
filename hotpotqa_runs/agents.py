@@ -32,6 +32,7 @@ import io
 
 import hashlib
 import pandas
+from PIL import Image
 
 class ModelSettings:
     def __init__(self, type, name, temperature: None, maxTokens: None, kwargs: None):
@@ -232,6 +233,7 @@ class CoTAgent:
                     threshold: float = 0.90,
                     maxStep: int = 3,
                     simplePromptMode = True,
+                    reportOfRun_path = "../reports/reports_of_runs.csv",
                     doPrint = False,
                     
                     ) -> None:
@@ -264,19 +266,25 @@ class CoTAgent:
         self.scratchpads = []
         self.modelOutputs = []
         self.reset()
-        
+        self.reportOfRun_path = reportOfRun_path
         
 
-    def run(self, inImagePath, inImage: None, reflexion_strategy: ReflexionStrategy = ReflexionStrategy.REFLEXION, inMaxStep: int = None, inThreshold = None) -> None:
+    def run(self, inImagePath, reflexion_strategy: ReflexionStrategy = ReflexionStrategy.REFLEXION, inMaxStep: int = None, inThreshold = None) -> None:
         if inMaxStep == None:
             maxSteps = self.maxStep
         else:
             maxSteps = inMaxStep
         
-        
         if inThreshold != None:
             self.threshold = inThreshold
-        self.runReport = ReportOfRun(path_reportOfRun = "", image_path = inImagePath, threshold = self.threshold, max_steps = self.maxStep, agent_model_type = self.actionLLM_modelType, agent_model_name = self.action_llm.settings.name, agent_model_setting_temperature = self.action_llm.settings.temperature, agent_model_setting_max_tokens = self.action_llm.settings.maxTokens, agent_model_setting_misc = "N/A", reflection_model_type = self.self_reflect_llm.settings.type, reflection_model_name = self.self_reflect_llm.settings.name, reflection_model_setting_temperature = self.self_reflect_llm.settings.temperature, reflection_model_setting_max_tokens = self.self_reflect_llm.settings.maxTokens, reflection_model_setting_misc = "N/A", agent_prompt_template = self.getAgentPromptTemplate(), reflection_prompt_template = self.getReflectionPromptTemplate())
+        
+        self.runReport = ReportOfRun(reportOfRun_path = self.reportOfRun_path, image_path = inImagePath, threshold = self.threshold, max_steps = self.maxStep, agent_model_type = self.actionLLM_modelType, agent_model_name = self.action_llm.settings.name, agent_model_setting_temperature = self.action_llm.settings.temperature, agent_model_setting_max_tokens = self.action_llm.settings.maxTokens, agent_model_setting_misc = "N/A", reflection_model_type = self.self_reflect_llm.settings.type, reflection_model_name = self.self_reflect_llm.settings.name, reflection_model_setting_temperature = self.self_reflect_llm.settings.temperature, reflection_model_setting_max_tokens = self.self_reflect_llm.settings.maxTokens, reflection_model_setting_misc = "N/A", agent_prompt_template = self.getAgentPromptTemplate(), reflection_prompt_template = self.getReflectionPromptTemplate())
+        
+
+
+        self.inputImagePath = inImagePath
+        inImage = Image.open(inImagePath)
+        
         print("\n\n===============================================================")
         self.originalImage = inImage
         self.reset()
@@ -818,10 +826,10 @@ def getImageHash(inFilename):
 
 
 class ReportOfRun:
-    def __init__(self, path_reportOfRun, image_path, run_id: None, duration: None, start_timestamp: None, end_timestamp: None, image_id: None, image_path_PLACEHOLDER: None, threshold: None, max_steps: None, agent_model_type: None, agent_model_name: None, agent_model_setting_temperature: None, agent_model_setting_max_tokens: None, agent_model_setting_misc: None, reflection_model_type: None, reflection_model_name: None, reflection_model_setting_temperature: None, reflection_model_setting_max_tokens: None, reflection_model_setting_misc: None, agent_prompt_template: None, reflection_prompt_template: None, is_successful: None, run_feedback: None):
+    def __init__(self, reportOfRun_path, image_path, run_id: None, duration: None, start_timestamp: None, end_timestamp: None, image_id: None, image_path_PLACEHOLDER: None, threshold: None, max_steps: None, agent_model_type: None, agent_model_name: None, agent_model_setting_temperature: None, agent_model_setting_max_tokens: None, agent_model_setting_misc: None, reflection_model_type: None, reflection_model_name: None, reflection_model_setting_temperature: None, reflection_model_setting_max_tokens: None, reflection_model_setting_misc: None, agent_prompt_template: None, reflection_prompt_template: None, is_successful: None, run_feedback: None):
         self.timestamp = pandas.Timestamp.now(tz="UTC")
 
-        self.path_reportOfRun = path_reportOfRun
+        self.reportOfRun_path = reportOfRun_path
         self.run_id = run_id
         
         self.duration = duration
@@ -970,7 +978,7 @@ class ReportOfRun:
 
     def save(self):
         self.createDataFrame()
-        self.dataFrame.to_csv(self.path_reportOfRun, mode='a', index=True, header=False)
+        self.dataFrame.to_csv(self.reportOfRun_path, mode='a', index=True, header=False)
     def saveTo(self, path):
         self.createDataFrame()
         self.dataFrame.to_csv(path, mode='a', index=True, header=False)
