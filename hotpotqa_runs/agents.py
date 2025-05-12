@@ -276,7 +276,7 @@ class CoTAgent:
         
         
 
-    def run(self, inImagePath, reflexion_strategy: ReflexionStrategy = ReflexionStrategy.REFLEXION, inMaxStep: int = None, inThreshold = None) -> None:
+    def run(self, inImagePath, outputImagePath, reflexion_strategy: ReflexionStrategy = ReflexionStrategy.REFLEXION, inMaxStep: int = None, inThreshold = None) -> None:
         if inMaxStep == None:
             maxSteps = self.maxStep
         else:
@@ -291,6 +291,8 @@ class CoTAgent:
 
         self.inputImagePath = inImagePath
         inImage = Image.open(inImagePath)
+
+        self.generatedImagePath = outputImagePath
         
         print("\n\n===============================================================")
         self.originalImage = inImage
@@ -311,6 +313,7 @@ class CoTAgent:
             step_report.run_id = self.runReport.run_id
             step_report.save()
         self.reset()
+        self.generatedImagePath = None
         print("===============================================================\n\n")
     def step(self, inImage = None) -> None:
 
@@ -381,8 +384,11 @@ class CoTAgent:
         self.previousScratchpad = self.scratchpad
         
         #save image
-        #output_image_path = None
+        self.generatedImage.save(self.generatedImagePath, format='PNG')
+        self.stepReport.output_image_path = self.generatedImagePath
         #= self.similarityScore
+
+        self.step_reports.append(self.stepReport)
     
     def reflect(self, strategy: ReflexionStrategy) -> None:
         print('Running Reflexion strategy...')
@@ -901,6 +907,9 @@ class RunReport:
         if self.run_id == None:
             self.setRunID()
         
+        if self.image_id == None:
+            self.image_id = getImageID(self.image_path)
+
         self.dictionary = {
             'run_id': [self.run_id],
             'duration': [self.duration],
@@ -950,7 +959,7 @@ class StepReport:
         self.output_image_path = output_image_path
         
         if output_image_sha256 == None:
-            self.output_image_sha256 = getImageID(output_image_path)
+            self.output_image_sha256 = getImageHash(output_image_path)
         else:
             self.output_image_sha256 = output_image_sha256
         
@@ -987,6 +996,9 @@ class StepReport:
         
         if self.duration == None:
             self.duration = self.end_timestamp - self.start_timestamp
+        
+        if self.output_image_sha256 == None:
+            self.output_image_sha256 = getImageHash(self.output_image_path)
         
         self.dictionary = {
             'run_id': [self.run_id],
