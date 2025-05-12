@@ -294,7 +294,7 @@ class CoTAgent:
             self.step()
             self.step_n += 1
         self.runReport.is_successful = self.is_correct(self.answer, inImage)
-        self.runReport.save
+        self.runReport.save()
         self.reset()
         print("===============================================================\n\n")
     def step(self, inImage = None) -> None:
@@ -904,12 +904,12 @@ class ReportOfRun:
         self.dataFrame = pandas.DataFrame(self.dictionary)
         self.dataFrame.set_index('run_id')
 
-    def save(self):
+    def save(self, addIndexCol = True, addHeader = False):
         self.createDataFrame()
-        self.dataFrame.to_csv(self.reportOfRun_path, mode='a', index=True, header=False)
-    def saveTo(self, path):
+        self.dataFrame.to_csv(self.reportOfRun_path, mode='a', index=addIndexCol, header=addHeader)
+    def saveTo(self, path, addIndexCol = True, addHeader = False):
         self.createDataFrame()
-        self.dataFrame.to_csv(path, mode='a', index=True, header=False)
+        self.dataFrame.to_csv(path, mode='a', index=addIndexCol, header=addHeader)
 
 """
 class ReportOfStep:
