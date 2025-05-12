@@ -228,7 +228,9 @@ class CoTAgent:
                     threshold: float = 0.90,
                     maxStep: int = 3,
                     simplePromptMode = True,
-                    runReport_path = "../reports/reports_of_runs.csv",
+                    reportFolder_path = "../reports/",
+                    runReport_path = None,
+                    stepReport_path = None,
                     doPrint = False,
                     
                     ) -> None:
@@ -261,7 +263,17 @@ class CoTAgent:
         self.scratchpads = []
         self.modelOutputs = []
         self.reset()
-        self.runReport_path = runReport_path
+        if runReport_path == None:
+            self.runReport_path = reportFolder_path + "Run_Reports.csv"
+        else: 
+            self.runReport_path = runReport_path
+        if stepReport_path == None:
+            self.stepReport_path = reportFolder_path + "Step_Reports.csv"
+        else:
+            self.stepReport_path = stepReport_path
+        self.step_reports: list[StepReport] = []
+
+        
         
 
     def run(self, inImagePath, reflexion_strategy: ReflexionStrategy = ReflexionStrategy.REFLEXION, inMaxStep: int = None, inThreshold = None) -> None:
@@ -274,7 +286,7 @@ class CoTAgent:
             self.threshold = inThreshold
         
         self.runReport = RunReport(runReport_path = self.runReport_path, image_path = inImagePath, threshold = self.threshold, max_steps = self.maxStep, agent_model_type = self.actionLLM_modelType, agent_model_name = self.action_llm.settings.name, agent_model_setting_temperature = self.action_llm.settings.temperature, agent_model_setting_max_tokens = self.action_llm.settings.maxTokens, agent_model_setting_misc = "N/A", reflection_model_type = self.self_reflect_llm.settings.type, reflection_model_name = self.self_reflect_llm.settings.name, reflection_model_setting_temperature = self.self_reflect_llm.settings.temperature, reflection_model_setting_max_tokens = self.self_reflect_llm.settings.maxTokens, reflection_model_setting_misc = "N/A", agent_prompt_template = self.getAgentPromptTemplate(), reflection_prompt_template = self.getReflectionPromptTemplate())
-        
+        self.step_reports = []
 
 
         self.inputImagePath = inImagePath
@@ -295,9 +307,15 @@ class CoTAgent:
             self.step_n += 1
         self.runReport.is_successful = self.is_correct(self.answer, inImage)
         self.runReport.save()
+        for step_report in self.step_reports:
+            step_report.run_id = self.runReport.run_id
+            step_report.save()
         self.reset()
         print("===============================================================\n\n")
     def step(self, inImage = None) -> None:
+
+        self.stepReport = StepReport(stepReport_path = self.stepReport_path, step = self.step_n, output_image_sha256 = None, start_timestamp = None, end_timestamp = None, duration = None, agent_prompt = None, agent_response = None, reflection_prompt = None, reflection_response = None, similarity_score = None, is_successful = None, step_feedback = None)
+
         if inImage == None:
             inImage = self.originalImage
         
@@ -362,7 +380,9 @@ class CoTAgent:
         self.modelOutputs.append(modelOutput)
         self.previousScratchpad = self.scratchpad
         
-        
+        #save image
+        #output_image_path = None
+        #= self.similarityScore
     
     def reflect(self, strategy: ReflexionStrategy) -> None:
         print('Running Reflexion strategy...')
@@ -390,6 +410,7 @@ class CoTAgent:
         if(self.generatedImage != None):
             self.generatedImages.append(self.generatedImage)
         self.generatedImage = None
+        self.similarityScore = None
 
 
     
@@ -491,10 +512,11 @@ class CoTAgent:
         return self.finished
 
     
-    def is_correct(self, modelOutput, inImage) -> bool:
+    def calcSimScoreAndOutImage(self, modelOutput, inImage):
         evaluator = StableDiffusionEval_test()
         similarityScore, outGeneratedImage = evaluator.evaluatePrompt(modelOutput, inImage, self.doPrint)
         self.generatedImage = outGeneratedImage
+        self.similarityScore = similarityScore
         
         print("Displaying generated image...")
         print("self.generatedImage.show():")
@@ -502,7 +524,11 @@ class CoTAgent:
         print("self.generatedImage:")
         self.generatedImage
         print("display generated image COMPLETE")
-        if similarityScore > self.threshold:
+
+    def is_correct(self, modelOutput, inImage) -> bool:   
+        self.calcSimScoreAndOutImage(self, modelOutput, inImage)
+
+        if self.similarityScore > self.threshold:
             self.scratchpad += 'Answer is CORRECT'
             print('Answer is CORRECT')
             return True
