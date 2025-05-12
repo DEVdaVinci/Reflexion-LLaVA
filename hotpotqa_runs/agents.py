@@ -284,12 +284,12 @@ class CoTAgent:
         
         if inThreshold != None:
             self.threshold = inThreshold
+        inImagePath = inInputImageFolder + inInputImageFilename + ".png"
         
         self.runReport = RunReport(runReport_path = self.runReport_path, image_path = inImagePath, threshold = self.threshold, max_steps = self.maxStep, agent_model_type = self.actionLLM_modelType, agent_model_name = self.action_llm.settings.name, agent_model_setting_temperature = self.action_llm.settings.temperature, agent_model_setting_max_tokens = self.action_llm.settings.maxTokens, agent_model_setting_misc = "N/A", reflection_model_type = self.self_reflect_llm.settings.type, reflection_model_name = self.self_reflect_llm.settings.name, reflection_model_setting_temperature = self.self_reflect_llm.settings.temperature, reflection_model_setting_max_tokens = self.self_reflect_llm.settings.maxTokens, reflection_model_setting_misc = "N/A", agent_prompt_template = self.getAgentPromptTemplate(), reflection_prompt_template = self.getReflectionPromptTemplate())
         self.step_reports = []
 
 
-        inImagePath = inInputImageFolder + inInputImageFilename + ".png"
         self.originalImageFolder = inInputImageFolder
         self.originalImageFilename = inInputImageFilename
         self.inputImagePath = inImagePath
