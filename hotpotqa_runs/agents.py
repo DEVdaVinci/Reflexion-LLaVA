@@ -81,6 +81,7 @@ class ActionLLM:
             self.settings = ModelSettings(type = self.modelType, name = "gpt-4o")
             print("gpt-4o was selected")
         else:
+            self.settings = ModelSettings(type = self.modelType, name = self.modelType)
             print(f"self.model type is: {self.modelType}")
             print(f"The model type is: {modelType}")
     def run(self, inPrompt, inImages = [], inMaxNewTokens = None):
