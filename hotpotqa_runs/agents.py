@@ -30,30 +30,58 @@ import openai
 import base64
 import io
 
+import hashlib
+import pandas
+
+class ModelSettings:
+    def __init__(self, type, name, temperature: None, maxTokens: None, kwargs: None):
+        self.type = type
+        self.name = name
+        self.temperature = temperature
+        self.maxTokens = maxTokens
+        self.kwargs = kwargs
+
+
+class LLaVA_ModelSettings(ModelSettings):
+    def __init__(self, load_in_4bit: None, bnb_4bit_compute_dtype: None, model_id: None):
+        self.load_in_4bit = load_in_4bit
+        self.bnb_4bit_compute_dtype = bnb_4bit_compute_dtype
+        self.model_id = model_id
+        
+
+
 class ActionLLM:
     def __init__(self, modelType, inModel: None):
         self.modelType = modelType
+        
         
         if inModel != None:
             self.model = inModel
         else:
             if modelType == "LLaVA":
+                self.model_id = "llava-hf/llava-1.5-7b-hf"
+                self.settings = LLaVA_ModelSettings(type = self.modelType, name = "LLaVA", temperature = None, load_in_4bit = True, bnb_4bit_compute_dtype = torch.float16, model_id = "llava-hf/llava-1.5-7b-hf")
+                
                 #!!!!!
                 self.quantization_config = BitsAndBytesConfig(
-                    load_in_4bit=True,
-                    bnb_4bit_compute_dtype=torch.float16
+                    load_in_4bit=self.settings.load_in_4bit,
+                    bnb_4bit_compute_dtype=self.settings.bnb_4bit_compute_dtype
                 )
-                self.model_id = "llava-hf/llava-1.5-7b-hf"
-                self.model = pipeline("image-to-text", model=self.model_id, model_kwargs={"quantization_config": self.quantization_config})
+                
+                self.settings.kwargs = {"quantization_config": self.quantization_config}
+                self.model = pipeline("image-to-text", model=self.settings.model_id, model_kwargs=self.settings.kwargs)
                 #!!!!!
             elif modelType == "AnyOpenAILLM":
+                self.settings = ModelSettings(type = self.modelType, name = "gpt-3.5-turbo", temperature = 0, maxTokens = 250)
+                self.settings.kwargs = {"stop": "\n"}
                 self.model = AnyOpenAILLM(
-                    temperature=0,
-                    max_tokens=250,
-                    model_name="gpt-3.5-turbo",
-                    model_kwargs={"stop": "\n"},
+                    temperature=self.settings.temperature,
+                    max_tokens=self.settings.maxTokens,
+                    model_name=self.settings.name,
+                    model_kwargs=self.settings.kwargs,
                     openai_api_key=os.environ['OPENAI_API_KEY'])
             elif modelType == "gpt-vision":
+                self.settings = ModelSettings(type = self.modelType, name = "gpt-4o")
                 print("gpt-4o was selected")
             else:
                 print(f"self.model type is: {self.modelType}")
@@ -79,6 +107,8 @@ class ActionLLM:
             max_new_tokens = 200
         else:
             max_new_tokens = inMaxNewTokens
+        
+        self.settings.maxTokens = max_new_tokens
 
         if image != None:
             outputs = self.model(image, prompt=prompt, generate_kwargs={"max_new_tokens": max_new_tokens})
@@ -94,6 +124,8 @@ class ActionLLM:
             max_new_tokens = 300
         else:
             max_new_tokens = inMaxNewTokens
+
+        self.settings.maxTokens = max_new_tokens
 
         image_original = inImages[0]
         image_generated = inImages[1]
@@ -114,7 +146,7 @@ class ActionLLM:
                     ],
                 }
             ],
-            max_tokens=max_new_tokens,
+            max_tokens=self.settings.maxTokens,
         )
 
         extractedText = response.choices[0].message.content
@@ -125,6 +157,9 @@ class ActionLLM:
             max_new_tokens = 300
         else:
             max_new_tokens = inMaxNewTokens
+
+        self.settings.maxTokens = max_new_tokens
+
 
 
 
@@ -147,7 +182,7 @@ class ActionLLM:
                     "content": promptContent,
                 }
             ],
-            max_tokens=max_new_tokens,
+            max_tokens=self.settings.maxTokens,
         )
 
         extractedText = response.choices[0].message.content
@@ -232,14 +267,16 @@ class CoTAgent:
         
         
 
-    def run(self, inImage, reflexion_strategy: ReflexionStrategy = ReflexionStrategy.REFLEXION, inMaxStep: int = None, inThreshold = None) -> None:
+    def run(self, inImagePath, inImage: None, reflexion_strategy: ReflexionStrategy = ReflexionStrategy.REFLEXION, inMaxStep: int = None, inThreshold = None) -> None:
         if inMaxStep == None:
             maxSteps = self.maxStep
         else:
             maxSteps = inMaxStep
         
+        
         if inThreshold != None:
             self.threshold = inThreshold
+        self.runReport = ReportOfRun(path_reportOfRun = "", image_path = inImagePath, threshold = self.threshold, max_steps = self.maxStep, agent_model_type = self.actionLLM_modelType, agent_model_name = self.action_llm.settings.name, agent_model_setting_temperature = self.action_llm.settings.temperature, agent_model_setting_max_tokens = self.action_llm.settings.maxTokens, agent_model_setting_misc = "N/A", reflection_model_type = self.self_reflect_llm.settings.type, reflection_model_name = self.self_reflect_llm.settings.name, reflection_model_setting_temperature = self.self_reflect_llm.settings.temperature, reflection_model_setting_max_tokens = self.self_reflect_llm.settings.maxTokens, reflection_model_setting_misc = "N/A", agent_prompt_template = self.getAgentPromptTemplate(), reflection_prompt_template = self.getReflectionPromptTemplate())
         print("\n\n===============================================================")
         self.originalImage = inImage
         self.reset()
@@ -253,6 +290,8 @@ class CoTAgent:
             self.reset()
             self.step()
             self.step_n += 1
+        self.runReport.is_successful = self.is_correct(self.answer, inImage)
+        self.runReport.save
         self.reset()
         print("===============================================================\n\n")
     def step(self, inImage = None) -> None:
@@ -386,6 +425,30 @@ class CoTAgent:
                                 scratchpad = self.previousScratchpad)
         return newPrompt
     
+    def getAgentPromptTemplate(self, inPrompt: str = None) -> str:
+        if inPrompt == None:
+            task = self.action_task
+        else:
+            task = inPrompt
+
+        if self.actionLLM_modelType == "LLaVA":
+            if(self.simplePromptMode == True):
+                newPrompt = "USER: <image>\n" + task + "\nASSISTANT:"
+            else:
+                promptFromTemplate = self.agent_prompt.format(
+                                    reflections = "\n(Reflections)\n",
+                                    context = self.context_agent,
+                                    action_agent_task = task,
+                                    scratchpad = "\n(Scratchpad)\n")
+                newPrompt = "USER: <image>\n" + promptFromTemplate + "\nASSISTANT:"
+        else:
+            newPrompt = self.agent_prompt.format(
+                                reflections = "\n(Reflections)\n",
+                                context = self.context_agent,
+                                action_agent_task = task,
+                                scratchpad = "\n(Scratchpad)\n")
+        return newPrompt
+    
     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     def _build_reflection_prompt(self) -> str:
         if(self.simplePromptMode == True):
@@ -403,6 +466,22 @@ class CoTAgent:
                             context = context,
                             reflect_agent_task = self.reflect_task,
                             scratchpad = self.previousScratchpad)
+    def getReflectionPromptTemplate(self) -> str:
+        if(self.simplePromptMode == True):
+            #examples = "N/A"
+            context = """The model was given the task of analyzing an input image and generating a prompt that can be used to generate a similar image. Image A is the original and Image B was created using the prompt generated from analyzing the original image.
+
+                        Image A: <image_1>
+                        Image B: <image_2>
+                        """
+        else:
+            #examples = self.reflect_examples
+            context = self.context_reflection
+            
+        return self.reflect_prompt.format(
+                            context = context,
+                            reflect_agent_task = self.reflect_task,
+                            scratchpad = "\n(Scratchpad)\n")
     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     def is_finished(self) -> bool:
@@ -727,4 +806,190 @@ def EM(answer, key) -> bool:
     return normalize_answer(answer) == normalize_answer(key)
 
 
+def getImageID(inFilename):
+    imageID = getImageHash(inFilename)
+    return imageID
+def getImageHash(inFilename):
+    with open(inFilename,"rb") as f:
+        bytes = f.read() # read entire file as bytes
+        readable_hash = hashlib.sha256(bytes).hexdigest()
+        return readable_hash
 
+
+
+class ReportOfRun:
+    def __init__(self, path_reportOfRun, image_path, run_id: None, duration: None, start_timestamp: None, end_timestamp: None, image_id: None, image_path_PLACEHOLDER: None, threshold: None, max_steps: None, agent_model_type: None, agent_model_name: None, agent_model_setting_temperature: None, agent_model_setting_max_tokens: None, agent_model_setting_misc: None, reflection_model_type: None, reflection_model_name: None, reflection_model_setting_temperature: None, reflection_model_setting_max_tokens: None, reflection_model_setting_misc: None, agent_prompt_template: None, reflection_prompt_template: None, is_successful: None, run_feedback: None):
+        self.timestamp = pandas.Timestamp.now(tz="UTC")
+
+        self.path_reportOfRun = path_reportOfRun
+        self.run_id = run_id
+        
+        self.duration = duration
+        
+        if start_timestamp == None:
+            self.start_timestamp = self.timestamp
+        else:
+            self.start_timestamp = start_timestamp
+        
+        self.end_timestamp = end_timestamp
+        
+        if image_id == None:
+            self.image_id = getImageID(image_path)
+        else:
+            self.image_id = image_id
+        
+        self.image_path = image_path
+        self.threshold = threshold
+        self.max_steps = max_steps
+        self.agent_model_type = agent_model_type
+        self.agent_model_name = agent_model_name
+        self.agent_model_setting_temperature = agent_model_setting_temperature
+        self.agent_model_setting_max_tokens = agent_model_setting_max_tokens
+        self.agent_model_setting_misc = agent_model_setting_misc
+        self.reflection_model_type = reflection_model_type
+        self.reflection_model_name = reflection_model_name
+        self.reflection_model_setting_temperature = reflection_model_setting_temperature
+        self.reflection_model_setting_max_tokens = reflection_model_setting_max_tokens
+        self.reflection_model_setting_misc = reflection_model_setting_misc
+        self.agent_prompt_template = agent_prompt_template
+        self.reflection_prompt_template = reflection_prompt_template
+        self.is_successful = is_successful
+        self.run_feedback = run_feedback
+
+    def setValues(self, run_id: None, duration: None, start_timestamp: None, end_timestamp: None, image_id: None, image_path: None, threshold: None, max_steps: None, agent_model_type: None, agent_model_name: None, agent_model_setting_temperature: None, agent_model_setting_max_tokens: None, agent_model_setting_misc: None, reflection_model_type: None, reflection_model_name: None, reflection_model_setting_temperature: None, reflection_model_setting_max_tokens: None, reflection_model_setting_misc: None, agent_prompt_template: None, reflection_prompt_template: None, is_successful: None, run_feedback: None):
+        if run_id != None:
+            self.run_id = run_id
+        
+        if duration != None:
+            self.duration = duration
+        
+        if start_timestamp != None:
+            self.start_timestamp = start_timestamp
+        
+        if end_timestamp != None:
+            self.end_timestamp = end_timestamp
+        
+        if image_id != None:
+            self.image_id = image_id
+        
+        if image_path != None:
+            self.image_path = image_path
+        
+        if threshold != None:
+            self.threshold = threshold
+        
+        if max_steps != None:
+            self.max_steps = max_steps
+        
+        if agent_model_type != None:
+            self.agent_model_type = agent_model_type
+        
+        if agent_model_name != None:
+            self.agent_model_name = agent_model_name
+        
+        if agent_model_setting_temperature != None:
+            self.agent_model_setting_temperature = agent_model_setting_temperature
+        
+        if agent_model_setting_max_tokens != None:
+            self.agent_model_setting_max_tokens = agent_model_setting_max_tokens
+        
+        if agent_model_setting_misc != None:
+            self.agent_model_setting_misc = agent_model_setting_misc
+        
+        if reflection_model_type != None:
+            self.reflection_model_type = reflection_model_type
+        
+        if reflection_model_name != None:
+            self.reflection_model_name = reflection_model_name
+        
+        if reflection_model_setting_temperature != None:
+            self.reflection_model_setting_temperature = reflection_model_setting_temperature
+        
+        if reflection_model_setting_max_tokens != None:
+            self.reflection_model_setting_max_tokens = reflection_model_setting_max_tokens
+        
+        if reflection_model_setting_misc != None:
+            self.reflection_model_setting_misc = reflection_model_setting_misc
+        
+        if agent_prompt_template != None:
+            self.agent_prompt_template = agent_prompt_template
+        
+        if reflection_prompt_template != None:
+            self.reflection_prompt_template = reflection_prompt_template
+        
+        if is_successful != None:
+            self.is_successful = is_successful
+        
+        if run_feedback != None:
+            self.run_feedback = run_feedback
+
+    def setRunID(self):
+        self.run_id = TimestampToStr(self.start_timestamp) + TimestampToStr(self.end_timestamp)
+
+    
+
+        
+    def createDictionary(self):
+        if self.end_timestamp == None:
+            self.end_timestamp = pandas.Timestamp.now(tz="UTC")
+        
+        if self.duration == None:
+            self.duration = self.end_timestamp - self.start_timestamp
+
+        if self.run_id == None:
+            self.run_id = self.setRunID()
+        
+        self.dictionary = {
+            'run_id': [self.run_id],
+            'duration': [self.duration],
+            'start_timestamp': [self.start_timestamp],
+            'end_timestamp': [self.end_timestamp],
+            'image_id': [self.image_id],
+            'image_path': [self.image_path],
+            'threshold': [self.threshold],
+            'max_steps': [self.max_steps],
+            'agent_model_type': [self.agent_model_type],
+            'agent_model_name': [self.agent_model_name],
+            'agent_model_setting_temperature': [self.agent_model_setting_temperature],
+            'agent_model_setting_max_tokens': [self.agent_model_setting_max_tokens],
+            'agent_model_setting_misc': [self.agent_model_setting_misc],
+            'reflection_model_type': [self.reflection_model_type],
+            'reflection_model_name': [self.reflection_model_name],
+            'reflection_model_setting_temperature': [self.reflection_model_setting_temperature],
+            'reflection_model_setting_max_tokens': [self.reflection_model_setting_max_tokens],
+            'reflection_model_setting_misc': [self.reflection_model_setting_misc],
+            'agent_prompt_template': [self.agent_prompt_template],
+            'reflection_prompt_template': [self.reflection_prompt_template],
+            'is_successful': [self.is_successful],
+            'run_feedback': [self.run_feedback]
+        }
+    def createDataFrame(self):
+        self.createDictionary()
+        self.dataFrame = pandas.DataFrame(self.dictionary)
+        self.dataFrame.set_index('run_id')
+
+    def save(self):
+        self.createDataFrame()
+        self.dataFrame.to_csv(self.path_reportOfRun, mode='a', index=True, header=False)
+    def saveTo(self, path):
+        self.createDataFrame()
+        self.dataFrame.to_csv(path, mode='a', index=True, header=False)
+
+"""
+class ReportOfStep:
+    def __init__(self,):
+"""
+
+def TimestampToStr(inTimestamp):
+    year    = inTimestamp.year
+    month   = inTimestamp.month
+    day     = inTimestamp.day
+    hour    = inTimestamp.hour
+    minute  = inTimestamp.minute
+    second  = inTimestamp.second
+    microSecond   = inTimestamp.microsecond
+    nanoSecond    = inTimestamp.nanosecond
+
+    
+    timestamp_str = f"{year:04}{month:02}{day:02}{hour:02}{minute:02}{second:02}{microSecond:06}{nanoSecond:03}"
+    return timestamp_str
