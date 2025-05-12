@@ -276,7 +276,7 @@ class CoTAgent:
         
         
 
-    def run(self, inImagePath, outputImagePath, reflexion_strategy: ReflexionStrategy = ReflexionStrategy.REFLEXION, inMaxStep: int = None, inThreshold = None) -> None:
+    def run(self, inInputImageFolder, inInputImageFilename, inOutputImageFolder, reflexion_strategy: ReflexionStrategy = ReflexionStrategy.REFLEXION, inMaxStep: int = None, inThreshold = None) -> None:
         if inMaxStep == None:
             maxSteps = self.maxStep
         else:
@@ -289,10 +289,16 @@ class CoTAgent:
         self.step_reports = []
 
 
+        inImagePath = inInputImageFolder + inInputImageFilename + ".png"
+        self.originalImageFolder = inInputImageFolder
+        self.originalImageFilename = inInputImageFilename
         self.inputImagePath = inImagePath
         inImage = Image.open(inImagePath)
 
-        self.generatedImagePath = outputImagePath
+        self.generatedImageFolder = inOutputImageFolder
+
+        
+        
         
         print("\n\n===============================================================")
         self.originalImage = inImage
@@ -388,12 +394,14 @@ class CoTAgent:
         
 
         
-        #save image
-        self.generatedImage.save(self.generatedImagePath, format='PNG')
-        self.stepReport.output_image_path = self.generatedImagePath
+        
         self.stepReport.is_successful = self.is_correct(self.answer, inImage)
         #similarity_score is calculated in the process of running is_correct()
         self.stepReport.similarity_score = self.similarityScore
+        self.generatedImagePath = self.calcGeneratedImagePath(self.generatedImageFolder, self.originalImageFilename)
+        #save image
+        self.generatedImage.save(self.generatedImagePath, format='PNG')
+        self.stepReport.output_image_path = self.generatedImagePath
         
 
         self.step_reports.append(self.stepReport)
@@ -612,6 +620,13 @@ class CoTAgent:
             return newThought
         else:
             return inThought
+
+    def calcGeneratedImagePath(self, inPathTogeneratedImageFolder,inInputImageFilename, miscText = ""):
+        currTimestamp = pandas.Timestamp.now(tz="UTC")
+        timestamp_str = currTimestamp.strftime("%Y%m%d%H%M%S%f")
+        outputImagePath = inPathTogeneratedImageFolder + inInputImageFilename + "-generatedImage_" + timestamp_str + miscText + ".png"
+        
+
 
 '''
 class ReactAgent:
