@@ -252,7 +252,7 @@ class CoTAgent:
         self.reflections: List[str] = []
         self.reflections_str = ''
         self.answer = ''
-        self.step_n: int = 0
+        self.step_n: int = 1
         self.originalImage = None
         self.generatedImage = None
         self.generatedImages = []
@@ -287,7 +287,7 @@ class CoTAgent:
         self.step_n += 1
         #Loop until done
         #If it is correct after then your done and the following code will never be excecuted
-        while(self.step_n > 0 and self.step_n < maxSteps and not self.is_correct(self.answer, inImage) and reflexion_strategy != ReflexionStrategy.NONE):
+        while(self.step_n > 1 and self.step_n <= maxSteps and not self.is_correct(self.answer, inImage) and reflexion_strategy != ReflexionStrategy.NONE):
             self.reflect(reflexion_strategy)
             print("---------------------------------------------------------------")
             self.reset()
@@ -304,7 +304,7 @@ class CoTAgent:
         
         print("_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-")
         
-        if self.step_n == 0:
+        if self.step_n == 1:
             self.scratchpad = "N/A (This is the first trial)"
         else:
             self.scratchpad = self.previousScratchpad
