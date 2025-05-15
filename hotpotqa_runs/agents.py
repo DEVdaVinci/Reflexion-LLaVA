@@ -288,7 +288,7 @@ class CoTAgent:
             self.threshold = inThreshold
         inImagePath = inInputImageFolder + inInputImageFilename + ".png"
         
-        self.runReport = RunReport(runReport_path = self.runReport_path, image_path = inImagePath, threshold = self.threshold, max_steps = self.maxStep, agent_model_type = self.actionLLM_modelType, agent_model_name = self.action_llm.settings.name, agent_model_setting_temperature = self.action_llm.settings.temperature, agent_model_setting_max_tokens = self.action_llm.settings.maxTokens, agent_model_setting_misc = "N/A", reflection_model_type = self.self_reflect_llm.settings.type, reflection_model_name = self.self_reflect_llm.settings.name, reflection_model_setting_temperature = self.self_reflect_llm.settings.temperature, reflection_model_setting_max_tokens = self.self_reflect_llm.settings.maxTokens, reflection_model_setting_misc = "N/A", agent_prompt_template = self.getAgentPromptTemplate(), reflection_prompt_template = self.getReflectionPromptTemplate())
+        self.runReport = RunReport(runReport_path = self.runReport_path, image_path = inImagePath, reflexion_strategy=reflexion_strategy, threshold = self.threshold, max_steps = self.maxStep, agent_model_type = self.actionLLM_modelType, agent_model_name = self.action_llm.settings.name, agent_model_setting_temperature = self.action_llm.settings.temperature, agent_model_setting_max_tokens = self.action_llm.settings.maxTokens, agent_model_setting_misc = "N/A", reflection_model_type = self.self_reflect_llm.settings.type, reflection_model_name = self.self_reflect_llm.settings.name, reflection_model_setting_temperature = self.self_reflect_llm.settings.temperature, reflection_model_setting_max_tokens = self.self_reflect_llm.settings.maxTokens, reflection_model_setting_misc = "N/A", agent_prompt_template = self.getAgentPromptTemplate(), reflection_prompt_template = self.getReflectionPromptTemplate())
         self.step_reports = []
 
 
@@ -938,7 +938,7 @@ def getImageHash(inFilename):
 
 
 class RunReport:
-    def __init__(self, runReport_path, image_path, run_id= None, duration= None, start_timestamp= None, end_timestamp= None, image_id= None, image_path_PLACEHOLDER= None, threshold= None, max_steps= None, agent_model_type= None, agent_model_name= None, agent_model_setting_temperature= None, agent_model_setting_max_tokens= None, agent_model_setting_misc= None, reflection_model_type= None, reflection_model_name= None, reflection_model_setting_temperature= None, reflection_model_setting_max_tokens= None, reflection_model_setting_misc= None, agent_prompt_template= None, reflection_prompt_template= None, is_successful= None, run_feedback= None):
+    def __init__(self, runReport_path, image_path, reflexion_strategy, run_id= None, duration= None, start_timestamp= None, end_timestamp= None, image_id= None, image_path_PLACEHOLDER= None, threshold= None, max_steps= None, agent_model_type= None, agent_model_name= None, agent_model_setting_temperature= None, agent_model_setting_max_tokens= None, agent_model_setting_misc= None, reflection_model_type= None, reflection_model_name= None, reflection_model_setting_temperature= None, reflection_model_setting_max_tokens= None, reflection_model_setting_misc= None, agent_prompt_template= None, reflection_prompt_template= None, is_successful= None, run_feedback= None):
         self.timestamp = pandas.Timestamp.now(tz="UTC")
 
         self.runReport_path = runReport_path
@@ -959,6 +959,9 @@ class RunReport:
             self.image_id = image_id
         
         self.image_path = image_path
+
+        self.reflexion_strategy = reflexion_strategy
+
         self.threshold = threshold
         self.max_steps = max_steps
         self.agent_model_type = agent_model_type
@@ -1012,6 +1015,7 @@ class RunReport:
             'end_timestamp': [self.end_timestamp],
             'image_id': [self.image_id],
             'image_path': [self.image_path],
+            'reflexion_strategy': [self.reflexion_strategy],
             'threshold': [self.threshold],
             'max_steps': [self.max_steps],
             'agent_model_type': [self.agent_model_type],
