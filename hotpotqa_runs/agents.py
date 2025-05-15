@@ -33,6 +33,7 @@ import io
 import hashlib
 import pandas
 from PIL import Image
+import statistics
 
 class ModelSettings:
     def __init__(self, type, name, temperature = None, maxTokens = None, kwargs = None):
@@ -313,13 +314,8 @@ class CoTAgent:
             self.reset()
             self.step()
             self.step_n += 1
-        self.runReport.is_successful = self.is_correct(self.answer, inImage)
-        self.runReport.save()
-        for step_report in self.step_reports:
-            step_report.run_id = self.runReport.run_id
-            step_report.save()
+        self.saveReports()
         self.reset()
-        self.generatedImagePath = None
         print("===============================================================\n\n")
     def step(self, inImage = None) -> None:
 
@@ -328,7 +324,8 @@ class CoTAgent:
         if inImage == None:
             inImage = self.originalImage
         
-        
+        self.similarityScore = None
+        self.generatedImage = None
         print("_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-")
         
         if self.step_n == 1:
@@ -553,7 +550,8 @@ class CoTAgent:
         print("display generated image COMPLETE")
 
     def is_correct(self, modelOutput, inImage) -> bool:   
-        self.calcSimScoreAndOutImage(modelOutput, inImage)
+        if self.similarityScore == None:
+            self.calcSimScoreAndOutImage(modelOutput, inImage)
 
         if self.similarityScore > self.threshold:
             self.scratchpad += 'Answer is CORRECT'
@@ -626,6 +624,40 @@ class CoTAgent:
         timestamp_str = currTimestamp.strftime("%Y%m%d%H%M%S%f")
         self.generatedImagePath = inPathTogeneratedImageFolder + inInputImageFilename + "-generatedImage_" + timestamp_str + miscText + ".png"
 
+    def saveReports(self):
+        self.runReport.is_successful = self.is_correct(self.answer, self.originalImage)
+        simScores = []
+        maxScore = 0.0
+        minScore = 1.0
+        maxScore_index: int
+        minScore_index: int
+        for step_report in self.step_reports:
+            step_report.run_id = self.runReport.run_id
+            step_report.save()
+            simScores.append(step_report.similarity_score)
+            if maxScore < step_report.similarity_score:
+                maxScore = step_report.similarity_score
+                maxScore_index = step_report.step
+            if step_report.similarity_score < minScore:
+                minScore = step_report.similarity_score
+                minScore_index = step_report.step
+        
+        self.runReport.max_score = maxScore
+        self.runReport.max_score_step = maxScore_index
+        self.runReport.min_score = minScore
+        self.runReport.min_score_step = minScore_index
+        self.runReport.range_scores = maxScore - minScore
+        self.runReport.stdev_scores = statistics.stdev(simScores)
+        self.runReport.mean_scores = statistics.mean(simScores)
+        self.runReport.median_scores = statistics.median(simScores)
+        self.runReport.mode_scores = statistics.mode(simScores)
+        self.runReport.variance_scores = statistics.variance(simScores)
+        
+    
+        
+
+
+        self.runReport.save()
 
 '''
 class ReactAgent:
@@ -916,6 +948,16 @@ class RunReport:
         self.agent_prompt_template = agent_prompt_template
         self.reflection_prompt_template = reflection_prompt_template
         self.is_successful = is_successful
+        self.max_score = None
+        self.max_score_step = None
+        self.min_score = None
+        self.min_score_step = None
+        self.range_scores = None
+        self.stdev_scores = None
+        self.mean_scores = None
+        self.median_scores = None
+        self.mode_scores = None
+        self.variance_scores = None
         self.run_feedback = run_feedback
 
     def setRunID(self):
