@@ -278,6 +278,7 @@ class CoTAgent:
         
 
     def run(self, inInputImageFolder, inInputImageFilename, inOutputImageFolder, reflexion_strategy: ReflexionStrategy = ReflexionStrategy.REFLEXION, inMaxStep: int = None, inThreshold = None) -> None:
+        self.reset_run()
         if inMaxStep == None:
             maxSteps = self.maxStep
         else:
@@ -436,6 +437,21 @@ class CoTAgent:
         self.generatedImage = None
         self.similarityScore = None
 
+    def reset_run(self) -> None:
+        self.reflections = []
+        self.reflections_str = ''
+        self.answer = ''
+        self.step_n = 1
+        self.originalImage = None
+        self.generatedImage = None
+        self.generatedImages = []
+        self.scratchpad = ''
+        self.previousScratchpad = ''
+        self.scratchpads = []
+        self.modelOutputs = []
+        self.step_reports = []
+        self.finished = False
+        self.similarityScore = None
 
     
     def prompt_agent(self, inImage) -> str:
