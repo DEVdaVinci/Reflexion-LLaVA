@@ -647,11 +647,18 @@ class CoTAgent:
         self.runReport.min_score = minScore
         self.runReport.min_score_step = minScore_index
         self.runReport.range_scores = maxScore - minScore
-        self.runReport.stdev_scores = statistics.stdev(simScores)
-        self.runReport.mean_scores = statistics.mean(simScores)
-        self.runReport.median_scores = statistics.median(simScores)
-        self.runReport.mode_scores = statistics.mode(simScores)
-        self.runReport.variance_scores = statistics.variance(simScores)
+        if len(simScores) >= 2:
+            self.runReport.stdev_scores = statistics.stdev(simScores)
+            self.runReport.mean_scores = statistics.mean(simScores)
+            self.runReport.median_scores = statistics.median(simScores)
+            self.runReport.mode_scores = statistics.mode(simScores)
+            self.runReport.variance_scores = statistics.variance(simScores)
+        else:
+            self.runReport.stdev_scores = 0
+            self.runReport.mean_scores = simScores[0]
+            self.runReport.median_scores = simScores[0]
+            self.runReport.mode_scores = simScores[0]
+            self.runReport.variance_scores = 0
         
     
         
