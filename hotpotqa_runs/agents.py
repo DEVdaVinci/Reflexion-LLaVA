@@ -309,9 +309,10 @@ class CoTAgent:
         self.step_n += 1
         #Loop until done
         #If it is correct after then your done and the following code will never be excecuted
-        while(self.step_n > 1 and self.step_n <= maxSteps and not self.is_correct(self.answer, inImage) and reflexion_strategy != ReflexionStrategy.NONE):
+        while(self.step_n > 1 and self.step_n <= maxSteps and not self.is_correct(self.answer, inImage)):
             print("Reflecting...")
-            self.reflect(reflexion_strategy)
+            if reflexion_strategy != ReflexionStrategy.NONE:
+                self.reflect(reflexion_strategy)
             print("---------------------------------------------------------------")
             self.reset()
             self.step()
