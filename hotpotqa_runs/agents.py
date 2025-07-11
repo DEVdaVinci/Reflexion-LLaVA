@@ -1038,10 +1038,10 @@ class RunReport:
         self.dataFrame = pandas.DataFrame(self.dictionary)
         self.dataFrame.set_index('run_id', inplace=True)
 
-    def save(self, addIndexCol = True, addHeader = False):
+    def save(self, addIndexCol = True, addHeader = True):
         self.createDataFrame()
         self.dataFrame.to_csv(self.runReport_path, mode='a', index=addIndexCol, header=addHeader)
-    def saveTo(self, path, addIndexCol = True, addHeader = False):
+    def saveTo(self, path, addIndexCol = True, addHeader = True):
         self.createDataFrame()
         self.dataFrame.to_csv(path, mode='a', index=addIndexCol, header=addHeader)
 
@@ -1116,10 +1116,10 @@ class StepReport:
         self.createDictionary()
         self.dataFrame = pandas.DataFrame(self.dictionary)
         
-    def save(self, addIndexCol = False, addHeader = False):
+    def save(self, addIndexCol = False, addHeader = True):
         self.createDataFrame()
         self.dataFrame.to_csv(self.stepReport_path, mode='a', index=addIndexCol, header=addHeader)
-    def saveTo(self, path, addIndexCol = False, addHeader = False):
+    def saveTo(self, path, addIndexCol = False, addHeader = True):
         self.createDataFrame()
         self.dataFrame.to_csv(path, mode='a', index=addIndexCol, header=addHeader)
 
