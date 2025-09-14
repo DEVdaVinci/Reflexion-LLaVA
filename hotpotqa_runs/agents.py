@@ -507,6 +507,7 @@ class CoTAgent:
         self.action_llm = ActionLLM(actionLLM_modelType)
         self.threshold = threshold
         self.maxStep = maxStep
+        self.simplePromptMode = simplePromptMode
         self.doPrint = doPrint
 
         self.reflections: List[str] = []
