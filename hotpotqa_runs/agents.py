@@ -2,7 +2,8 @@ import re, string, os
 from typing import List, Union, Literal
 from enum import Enum
 import tiktoken
-from langchain import OpenAI, Wikipedia
+from langchain import Wikipedia
+from langchain import OpenAI as OpenAI_langchain 
 from langchain.llms.base import BaseLLM
 from langchain.chat_models import ChatOpenAI
 from langchain.chat_models.base import BaseChatModel
@@ -26,7 +27,7 @@ from transformers import pipeline
 from evaluation import StableDiffusionEval_test
 
 from prompts import i2p_reflect_prompt, i2p_reflect_agent_prompt
-import openai
+from openai import OpenAI as OpenAI_openai
 import base64
 import io
 
@@ -34,6 +35,226 @@ import hashlib
 import pandas
 from PIL import Image
 import statistics
+
+
+
+def getImageHash(inFilename):
+    with open(inFilename,"rb") as f:
+        bytes = f.read() # read entire file as bytes
+        readable_hash = hashlib.sha256(bytes).hexdigest()
+        return readable_hash
+def getImageID(inFilename):
+    imageID = getImageHash(inFilename)
+    return imageID
+
+
+def TimestampToStr(inTimestamp):
+    year    = inTimestamp.year
+    month   = inTimestamp.month
+    day     = inTimestamp.day
+    hour    = inTimestamp.hour
+    minute  = inTimestamp.minute
+    second  = inTimestamp.second
+    microSecond   = inTimestamp.microsecond
+    nanoSecond    = inTimestamp.nanosecond
+
+    
+    timestamp_str = f"{year:04}{month:02}{day:02}{hour:02}{minute:02}{second:02}{microSecond:06}{nanoSecond:03}"
+    return timestamp_str
+
+
+class RunReport:
+    def __init__(self, runReport_path, image_path, reflexion_strategy, run_id= None, duration= None, start_timestamp= None, end_timestamp= None, image_id= None, image_path_PLACEHOLDER= None, threshold= None, max_steps= None, agent_model_type= None, agent_model_name= None, agent_model_setting_temperature= None, agent_model_setting_max_tokens= None, agent_model_setting_misc= None, reflection_model_type= None, reflection_model_name= None, reflection_model_setting_temperature= None, reflection_model_setting_max_tokens= None, reflection_model_setting_misc= None, agent_prompt_template= None, reflection_prompt_template= None, is_successful= None, run_feedback= None):
+        self.timestamp = pandas.Timestamp.now(tz="UTC")
+
+        self.runReport_path = runReport_path
+        self.run_id = run_id
+        
+        self.duration = duration
+        
+        if start_timestamp == None:
+            self.start_timestamp = self.timestamp
+        else:
+            self.start_timestamp = start_timestamp
+        
+        self.end_timestamp = end_timestamp
+        
+        if image_id == None:
+            self.image_id = getImageID(image_path)
+        else:
+            self.image_id = image_id
+        
+        self.image_path = image_path
+
+        self.reflexion_strategy = reflexion_strategy
+
+        self.threshold = threshold
+        self.max_steps = max_steps
+        self.agent_model_type = agent_model_type
+        self.agent_model_name = agent_model_name
+        self.agent_model_setting_temperature = agent_model_setting_temperature
+        self.agent_model_setting_max_tokens = agent_model_setting_max_tokens
+        self.agent_model_setting_misc = agent_model_setting_misc
+        self.reflection_model_type = reflection_model_type
+        self.reflection_model_name = reflection_model_name
+        self.reflection_model_setting_temperature = reflection_model_setting_temperature
+        self.reflection_model_setting_max_tokens = reflection_model_setting_max_tokens
+        self.reflection_model_setting_misc = reflection_model_setting_misc
+        self.agent_prompt_template = agent_prompt_template
+        self.reflection_prompt_template = reflection_prompt_template
+        self.is_successful = is_successful
+        self.max_score = None
+        self.max_score_step = None
+        self.min_score = None
+        self.min_score_step = None
+        self.range_scores = None
+        self.stdev_scores = None
+        self.mean_scores = None
+        self.median_scores = None
+        self.mode_scores = None
+        self.variance_scores = None
+        self.run_feedback = run_feedback
+
+    def setRunID(self):
+        self.run_id = TimestampToStr(self.start_timestamp) + TimestampToStr(self.end_timestamp)
+
+    
+
+        
+    def createDictionary(self):
+        if self.end_timestamp == None:
+            self.end_timestamp = pandas.Timestamp.now(tz="UTC")
+        
+        if self.duration == None:
+            self.duration = self.end_timestamp - self.start_timestamp
+
+        if self.run_id == None:
+            self.setRunID()
+        
+        if self.image_id == None:
+            self.image_id = getImageID(self.image_path)
+
+        self.dictionary = {
+            'run_id': [self.run_id],
+            'duration': [self.duration],
+            'start_timestamp': [self.start_timestamp],
+            'end_timestamp': [self.end_timestamp],
+            'image_id': [self.image_id],
+            'image_path': [self.image_path],
+            'reflexion_strategy': [self.reflexion_strategy],
+            'threshold': [self.threshold],
+            'max_steps': [self.max_steps],
+            'agent_model_type': [self.agent_model_type],
+            'agent_model_name': [self.agent_model_name],
+            'agent_model_setting_temperature': [self.agent_model_setting_temperature],
+            'agent_model_setting_max_tokens': [self.agent_model_setting_max_tokens],
+            'agent_model_setting_misc': [self.agent_model_setting_misc],
+            'reflection_model_type': [self.reflection_model_type],
+            'reflection_model_name': [self.reflection_model_name],
+            'reflection_model_setting_temperature': [self.reflection_model_setting_temperature],
+            'reflection_model_setting_max_tokens': [self.reflection_model_setting_max_tokens],
+            'reflection_model_setting_misc': [self.reflection_model_setting_misc],
+            'agent_prompt_template': [self.agent_prompt_template],
+            'reflection_prompt_template': [self.reflection_prompt_template],
+            'is_successful': [self.is_successful],
+            'run_feedback': [self.run_feedback]
+        }
+    def createDataFrame(self):
+        self.createDictionary()
+        self.dataFrame = pandas.DataFrame(self.dictionary)
+        self.dataFrame.set_index('run_id', inplace=True)
+
+    def save(self, addIndexCol = True, addHeader = True):
+        self.createDataFrame()
+        self.dataFrame.to_csv(self.runReport_path, mode='a', index=addIndexCol, header=addHeader)
+    def saveTo(self, path, addIndexCol = True, addHeader = True):
+        self.createDataFrame()
+        self.dataFrame.to_csv(path, mode='a', index=addIndexCol, header=addHeader)
+
+
+class StepReport:
+    def __init__(self, stepReport_path: str, step: int, run_id = None, output_image_path = None, output_image_sha256 = None, start_timestamp = None, end_timestamp = None, duration = None, agent_prompt = None, agent_response = None, reflection_prompt = None, reflection_response = None, similarity_score = None, is_successful = None, step_feedback = None):
+        self.timestamp = pandas.Timestamp.now(tz="UTC")
+
+        self.stepReport_path = stepReport_path
+        
+        self.run_id = run_id
+        self.step = step
+        
+        self.output_image_path = output_image_path
+        
+        if output_image_sha256 == None and output_image_path != None:
+            self.output_image_sha256 = getImageHash(output_image_path)
+        else:
+            self.output_image_sha256 = output_image_sha256
+        
+        
+        
+        if start_timestamp == None:
+            self.start_timestamp = self.timestamp
+        else:
+            self.start_timestamp = start_timestamp
+        
+        self.end_timestamp = end_timestamp
+
+        self.duration = duration
+        
+        
+        
+        self.agent_prompt = agent_prompt
+        self.agent_response = agent_response
+        self.reflection_prompt = reflection_prompt
+        self.reflection_response = reflection_response
+        self.similarity_score = similarity_score
+        self.is_successful = is_successful
+        self.step_feedback = step_feedback
+    
+    
+
+        
+    def createDictionary(self):
+        if self.end_timestamp == None:
+            self.end_timestamp = pandas.Timestamp.now(tz="UTC")
+        
+        if self.duration == None:
+            self.duration = self.end_timestamp - self.start_timestamp
+        
+        if self.output_image_sha256 == None:
+            self.output_image_sha256 = getImageHash(self.output_image_path)
+        
+        self.dictionary = {
+            'run_id': [self.run_id],
+            'step': [self.step],
+            'output_image_path': [self.output_image_path],
+            'output_image_sha256': [self.output_image_sha256],
+            'start_timestamp': [self.start_timestamp],
+            'end_timestamp': [self.end_timestamp],
+            'duration': [self.duration],
+            'agent_prompt': [self.agent_prompt],
+            'agent_response': [self.agent_response],
+            'reflection_prompt': [self.reflection_prompt],
+            'reflection_response': [self.reflection_response],
+            'similarity_score': [self.similarity_score],
+            'is_successful': [self.is_successful],
+            'step_feedback': [self.step_feedback]
+        }
+    def createDataFrame(self):
+        self.createDictionary()
+        self.dataFrame = pandas.DataFrame(self.dictionary)
+        
+    def save(self, addIndexCol = False, addHeader = True):
+        self.createDataFrame()
+        self.dataFrame.to_csv(self.stepReport_path, mode='a', index=addIndexCol, header=addHeader)
+    def saveTo(self, path, addIndexCol = False, addHeader = True):
+        self.createDataFrame()
+        self.dataFrame.to_csv(path, mode='a', index=addIndexCol, header=addHeader)
+
+
+
+
+
+
+
 
 class ModelSettings:
     def __init__(self, type, name, temperature = None, maxTokens = None, kwargs = None):
@@ -116,8 +337,9 @@ class ActionLLM:
         #return outputs
         return outputs[0]["generated_text"]#!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     def run_AnyOpenAILLM(self, prompt):
-        return self.model(prompt)
         print("UNDER CONSTRUCTION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        return self.model(prompt)
+        
     def run_GPT_4o(self, inPrompt, inImages = [], inMaxNewTokens = 500):
         if(inMaxNewTokens == None):
             max_new_tokens = 300
@@ -131,6 +353,8 @@ class ActionLLM:
         originalImage_b64 = self.encode_image(image_original)
         generatedImage_b64 = self.encode_image(image_generated)
 
+
+        '''
         openai.api_key = os.environ['OPENAI_API_KEY']
 
         response = openai.ChatCompletion.create(
@@ -148,6 +372,24 @@ class ActionLLM:
             max_tokens=self.settings.maxTokens,
         )
 
+        extractedText = response.choices[0].message.content
+        '''
+        client = OpenAI_openai()  # reads OPENAI_API_KEY from env
+
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": inPrompt},
+                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{originalImage_b64}"},},
+                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{generatedImage_b64}"},},
+                    ],
+                }
+            ],
+            max_tokens=self.settings.maxTokens,
+        )
         extractedText = response.choices[0].message.content
 
         return extractedText
@@ -171,6 +413,7 @@ class ActionLLM:
 
 
 
+        '''
         openai.api_key = os.environ['OPENAI_API_KEY']
 
         response = openai.ChatCompletion.create(
@@ -184,6 +427,21 @@ class ActionLLM:
             max_tokens=self.settings.maxTokens,
         )
 
+        extractedText = response.choices[0].message.content
+        '''
+
+        client = OpenAI_openai()  # reads OPENAI_API_KEY from env
+
+        response = client.chat.completions.create(
+            model=self.modelType,
+            messages=[
+                {
+                    "role": "user",
+                    "content": promptContent,
+                }
+            ],
+            max_tokens=self.settings.maxTokens,
+        )
         extractedText = response.choices[0].message.content
 
         return extractedText
@@ -228,7 +486,7 @@ class CoTAgent:
                     actionLLM_modelType: str = "LLaVA",
                     threshold: float = 0.90,
                     maxStep: int = 3,
-                    simplePromptMode = True,
+                    simplePromptMode = False,
                     reportFolder_path = "../reports/",
                     runReport_path = None,
                     stepReport_path = None,
@@ -250,7 +508,6 @@ class CoTAgent:
         self.threshold = threshold
         self.maxStep = maxStep
         self.doPrint = doPrint
-        self.simplePromptMode = False
 
         self.reflections: List[str] = []
         self.reflections_str = ''
@@ -926,214 +1183,3 @@ def EM(answer, key) -> bool:
     return normalize_answer(answer) == normalize_answer(key)
 
 
-def getImageID(inFilename):
-    imageID = getImageHash(inFilename)
-    return imageID
-def getImageHash(inFilename):
-    with open(inFilename,"rb") as f:
-        bytes = f.read() # read entire file as bytes
-        readable_hash = hashlib.sha256(bytes).hexdigest()
-        return readable_hash
-
-
-
-class RunReport:
-    def __init__(self, runReport_path, image_path, reflexion_strategy, run_id= None, duration= None, start_timestamp= None, end_timestamp= None, image_id= None, image_path_PLACEHOLDER= None, threshold= None, max_steps= None, agent_model_type= None, agent_model_name= None, agent_model_setting_temperature= None, agent_model_setting_max_tokens= None, agent_model_setting_misc= None, reflection_model_type= None, reflection_model_name= None, reflection_model_setting_temperature= None, reflection_model_setting_max_tokens= None, reflection_model_setting_misc= None, agent_prompt_template= None, reflection_prompt_template= None, is_successful= None, run_feedback= None):
-        self.timestamp = pandas.Timestamp.now(tz="UTC")
-
-        self.runReport_path = runReport_path
-        self.run_id = run_id
-        
-        self.duration = duration
-        
-        if start_timestamp == None:
-            self.start_timestamp = self.timestamp
-        else:
-            self.start_timestamp = start_timestamp
-        
-        self.end_timestamp = end_timestamp
-        
-        if image_id == None:
-            self.image_id = getImageID(image_path)
-        else:
-            self.image_id = image_id
-        
-        self.image_path = image_path
-
-        self.reflexion_strategy = reflexion_strategy
-
-        self.threshold = threshold
-        self.max_steps = max_steps
-        self.agent_model_type = agent_model_type
-        self.agent_model_name = agent_model_name
-        self.agent_model_setting_temperature = agent_model_setting_temperature
-        self.agent_model_setting_max_tokens = agent_model_setting_max_tokens
-        self.agent_model_setting_misc = agent_model_setting_misc
-        self.reflection_model_type = reflection_model_type
-        self.reflection_model_name = reflection_model_name
-        self.reflection_model_setting_temperature = reflection_model_setting_temperature
-        self.reflection_model_setting_max_tokens = reflection_model_setting_max_tokens
-        self.reflection_model_setting_misc = reflection_model_setting_misc
-        self.agent_prompt_template = agent_prompt_template
-        self.reflection_prompt_template = reflection_prompt_template
-        self.is_successful = is_successful
-        self.max_score = None
-        self.max_score_step = None
-        self.min_score = None
-        self.min_score_step = None
-        self.range_scores = None
-        self.stdev_scores = None
-        self.mean_scores = None
-        self.median_scores = None
-        self.mode_scores = None
-        self.variance_scores = None
-        self.run_feedback = run_feedback
-
-    def setRunID(self):
-        self.run_id = TimestampToStr(self.start_timestamp) + TimestampToStr(self.end_timestamp)
-
-    
-
-        
-    def createDictionary(self):
-        if self.end_timestamp == None:
-            self.end_timestamp = pandas.Timestamp.now(tz="UTC")
-        
-        if self.duration == None:
-            self.duration = self.end_timestamp - self.start_timestamp
-
-        if self.run_id == None:
-            self.setRunID()
-        
-        if self.image_id == None:
-            self.image_id = getImageID(self.image_path)
-
-        self.dictionary = {
-            'run_id': [self.run_id],
-            'duration': [self.duration],
-            'start_timestamp': [self.start_timestamp],
-            'end_timestamp': [self.end_timestamp],
-            'image_id': [self.image_id],
-            'image_path': [self.image_path],
-            'reflexion_strategy': [self.reflexion_strategy],
-            'threshold': [self.threshold],
-            'max_steps': [self.max_steps],
-            'agent_model_type': [self.agent_model_type],
-            'agent_model_name': [self.agent_model_name],
-            'agent_model_setting_temperature': [self.agent_model_setting_temperature],
-            'agent_model_setting_max_tokens': [self.agent_model_setting_max_tokens],
-            'agent_model_setting_misc': [self.agent_model_setting_misc],
-            'reflection_model_type': [self.reflection_model_type],
-            'reflection_model_name': [self.reflection_model_name],
-            'reflection_model_setting_temperature': [self.reflection_model_setting_temperature],
-            'reflection_model_setting_max_tokens': [self.reflection_model_setting_max_tokens],
-            'reflection_model_setting_misc': [self.reflection_model_setting_misc],
-            'agent_prompt_template': [self.agent_prompt_template],
-            'reflection_prompt_template': [self.reflection_prompt_template],
-            'is_successful': [self.is_successful],
-            'run_feedback': [self.run_feedback]
-        }
-    def createDataFrame(self):
-        self.createDictionary()
-        self.dataFrame = pandas.DataFrame(self.dictionary)
-        self.dataFrame.set_index('run_id', inplace=True)
-
-    def save(self, addIndexCol = True, addHeader = True):
-        self.createDataFrame()
-        self.dataFrame.to_csv(self.runReport_path, mode='a', index=addIndexCol, header=addHeader)
-    def saveTo(self, path, addIndexCol = True, addHeader = True):
-        self.createDataFrame()
-        self.dataFrame.to_csv(path, mode='a', index=addIndexCol, header=addHeader)
-
-
-class StepReport:
-    def __init__(self, stepReport_path: str, step: int, run_id = None, output_image_path = None, output_image_sha256 = None, start_timestamp = None, end_timestamp = None, duration = None, agent_prompt = None, agent_response = None, reflection_prompt = None, reflection_response = None, similarity_score = None, is_successful = None, step_feedback = None):
-        self.timestamp = pandas.Timestamp.now(tz="UTC")
-
-        self.stepReport_path = stepReport_path
-        
-        self.run_id = run_id
-        self.step = step
-        
-        self.output_image_path = output_image_path
-        
-        if output_image_sha256 == None and output_image_path != None:
-            self.output_image_sha256 = getImageHash(output_image_path)
-        else:
-            self.output_image_sha256 = output_image_sha256
-        
-        
-        
-        if start_timestamp == None:
-            self.start_timestamp = self.timestamp
-        else:
-            self.start_timestamp = start_timestamp
-        
-        self.end_timestamp = end_timestamp
-
-        self.duration = duration
-        
-        
-        
-        self.agent_prompt = agent_prompt
-        self.agent_response = agent_response
-        self.reflection_prompt = reflection_prompt
-        self.reflection_response = reflection_response
-        self.similarity_score = similarity_score
-        self.is_successful = is_successful
-        self.step_feedback = step_feedback
-    
-    
-
-        
-    def createDictionary(self):
-        if self.end_timestamp == None:
-            self.end_timestamp = pandas.Timestamp.now(tz="UTC")
-        
-        if self.duration == None:
-            self.duration = self.end_timestamp - self.start_timestamp
-        
-        if self.output_image_sha256 == None:
-            self.output_image_sha256 = getImageHash(self.output_image_path)
-        
-        self.dictionary = {
-            'run_id': [self.run_id],
-            'step': [self.step],
-            'output_image_path': [self.output_image_path],
-            'output_image_sha256': [self.output_image_sha256],
-            'start_timestamp': [self.start_timestamp],
-            'end_timestamp': [self.end_timestamp],
-            'duration': [self.duration],
-            'agent_prompt': [self.agent_prompt],
-            'agent_response': [self.agent_response],
-            'reflection_prompt': [self.reflection_prompt],
-            'reflection_response': [self.reflection_response],
-            'similarity_score': [self.similarity_score],
-            'is_successful': [self.is_successful],
-            'step_feedback': [self.step_feedback]
-        }
-    def createDataFrame(self):
-        self.createDictionary()
-        self.dataFrame = pandas.DataFrame(self.dictionary)
-        
-    def save(self, addIndexCol = False, addHeader = True):
-        self.createDataFrame()
-        self.dataFrame.to_csv(self.stepReport_path, mode='a', index=addIndexCol, header=addHeader)
-    def saveTo(self, path, addIndexCol = False, addHeader = True):
-        self.createDataFrame()
-        self.dataFrame.to_csv(path, mode='a', index=addIndexCol, header=addHeader)
-
-
-def TimestampToStr(inTimestamp):
-    year    = inTimestamp.year
-    month   = inTimestamp.month
-    day     = inTimestamp.day
-    hour    = inTimestamp.hour
-    minute  = inTimestamp.minute
-    second  = inTimestamp.second
-    microSecond   = inTimestamp.microsecond
-    nanoSecond    = inTimestamp.nanosecond
-
-    
-    timestamp_str = f"{year:04}{month:02}{day:02}{hour:02}{minute:02}{second:02}{microSecond:06}{nanoSecond:03}"
-    return timestamp_str
