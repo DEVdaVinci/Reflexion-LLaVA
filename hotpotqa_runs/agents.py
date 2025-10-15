@@ -1066,7 +1066,7 @@ class CoTAgent:
         
 
 
-        self.runReport.save(self, addIndexCol = True, addHeader = True, updateDataFrame = True, calcStats = True, step_reports = self.step_reports)
+        self.runReport.save(addIndexCol = True, addHeader = True, updateDataFrame = True, calcStats = True, step_reports = self.step_reports)
 
 '''
 class ReactAgent:
