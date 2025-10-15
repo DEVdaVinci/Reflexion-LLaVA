@@ -215,9 +215,7 @@ class RunReport:
         self.run_id = TimestampToStr(self.start_timestamp) + TimestampToStr(self.end_timestamp)
 
     def stats(self, step_reports: list[StepReport]):
-        simScores_image = []
-        durations = []
-        steps = []
+        
 
         step_firstIndex = step_reports[0].step
 
@@ -234,45 +232,63 @@ class RunReport:
         self.min_duration_step = step_firstIndex
         self.max_duration_step = step_firstIndex
 
-        for step_report in step_reports:
-            currScore = step_report.similarity_score
-            currDuration = step_report.getDuration_seconds()
-            currStep = step_report.step
+        if(len(step_reports < 2)):
+            self.mean_score = simScore_firstIndex_image
+            self.median_score = simScore_firstIndex_image
+            self.mode_scores = simScore_firstIndex_image
+            self.stdev_scores = 0
+            self.variance_scores = 0
+            self.linearRegression_scores = None
 
-            simScores_image.append(currScore)
-            durations.append(currDuration)
-            steps.append(currStep)
+            self.mean_duration = duration_firstIndex
+            self.median_duration = duration_firstIndex
+            self.mode_durations = duration_firstIndex
+            self.stdev_durations = 0
+            self.variance_durations = 0
+        else:
+            simScores_image = []
+            durations = []
+            steps = []
+
+            for step_report in step_reports:
+                currScore = step_report.similarity_score
+                currDuration = step_report.getDuration_seconds()
+                currStep = step_report.step
+
+                simScores_image.append(currScore)
+                durations.append(currDuration)
+                steps.append(currStep)
 
 
-            if self.max_score < currScore:
-                self.max_score = currScore
-                self.max_score_step = currStep
-            elif currScore < self.min_score:
-                self.min_score = currScore
-                self.min_score_step = currStep
+                if self.max_score < currScore:
+                    self.max_score = currScore
+                    self.max_score_step = currStep
+                elif currScore < self.min_score:
+                    self.min_score = currScore
+                    self.min_score_step = currStep
+                
+                
+                
+                
+                if currDuration < self.min_duration:
+                    self.min_duration = currDuration
+                    self.min_duration_step = currStep
+                elif currDuration > self.max_duration:
+                    self.max_duration = currDuration
+                    self.max_duration_step = currStep
             
-            
-            
-            
-            if currDuration < self.min_duration:
-                self.min_duration = currDuration
-                self.min_duration_step = currStep
-            elif currDuration > self.max_duration:
-                self.max_duration = currDuration
-                self.max_duration_step = currStep
-        
-        self.mean_score = statistics.mean(simScores_image)
-        self.median_score = statistics.median(simScores_image)
-        self.mode_scores = statistics.mode(simScores_image)
-        self.stdev_scores = statistics.stdev(simScores_image)
-        self.variance_scores = statistics.variance(simScores_image)
-        self.linearRegression_scores = statistics.linear_regression(simScores_image, steps)
+            self.mean_score = statistics.mean(simScores_image)
+            self.median_score = statistics.median(simScores_image)
+            self.mode_scores = statistics.mode(simScores_image)
+            self.stdev_scores = statistics.stdev(simScores_image)
+            self.variance_scores = statistics.variance(simScores_image)
+            self.linearRegression_scores = statistics.linear_regression(simScores_image, steps)
 
-        self.mean_duration = statistics.mean(durations)
-        self.median_duration = statistics.median(durations)
-        self.mode_durations = statistics.mode(durations)
-        self.stdev_durations = statistics.stdev(durations)
-        self.variance_durations = statistics.variance(durations)
+            self.mean_duration = statistics.mean(durations)
+            self.median_duration = statistics.median(durations)
+            self.mode_durations = statistics.mode(durations)
+            self.stdev_durations = statistics.stdev(durations)
+            self.variance_durations = statistics.variance(durations)
         
 
 
