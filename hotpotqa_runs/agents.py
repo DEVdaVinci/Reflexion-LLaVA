@@ -1045,7 +1045,6 @@ class CoTAgent:
         
 
 
-        self.runReport.save()
         self.runReport.save(self, addIndexCol = True, addHeader = True, updateDataFrame = True, calcStats = True, step_reports = self.step_reports)
 
 '''
