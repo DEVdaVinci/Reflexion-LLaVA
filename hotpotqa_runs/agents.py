@@ -212,10 +212,42 @@ class RunReport:
         self.run_id = TimestampToStr(self.start_timestamp) + TimestampToStr(self.end_timestamp)
 
     def stats(self, step_reports: list[StepReport]):
-        simScores_image = list(map(operator.__getattribute__("similarity_score"), step_reports))
-        durations = list(map(operator.__getattribute__("duration"), step_reports))
-        steps = list(map(operator.__getattribute__("step"), step_reports))
-        
+        simScores_image = []
+        durations = []
+        steps = []
+
+        self.min_score = step_reports[0].similarity_score
+        self.max_score = step_reports[0].similarity_score
+
+        self.min_duration = step_reports[0].duration
+        self.max_duration = step_reports[0].duration
+
+        for step_report in step_reports:
+            currScore = step_report.similarity_score
+            currDuration = step_report.duration
+            currStep = step_report.step
+
+            simScores_image.append(currScore)
+            durations.append(currDuration)
+            steps.append(currStep)
+
+
+            if self.max_score < currScore:
+                self.max_score = currScore
+                self.max_score_step = currStep
+            elif currScore < self.min_score:
+                self.min_score = currScore
+                self.min_score_step = currStep
+            
+            
+            
+            
+            if currDuration < self.min_duration:
+                self.min_duration = currDuration
+                self.min_duration_step = currStep
+            elif currDuration > self.max_duration:
+                self.max_duration = currDuration
+                self.max_duration_step = currStep
         
         self.mean_score = statistics.mean(simScores_image)
         self.median_score = statistics.median(simScores_image)
@@ -232,37 +264,14 @@ class RunReport:
         
 
 
-        self.min_score = self.mean_score
-        self.max_score = self.mean_score
-
-        self.min_duration = self.mean_duration
-        self.max_duration = self.mean_duration
+        
 
 
         
 
 
 
-        for step_report in step_reports:
-            currScore = step_report.similarity_score
-            currDuration = step_report.duration
-
-            if self.max_score < currScore:
-                self.max_score = currScore
-                self.max_score_step = step_report.step
-            elif currScore < self.min_score:
-                self.min_score = currScore
-                self.min_score_step = step_report.step
-            
-            
-            
-            
-            if currDuration < self.min_duration:
-                self.min_duration = currDuration
-                self.min_duration_step = step_report.step
-            elif currDuration > self.max_duration:
-                self.max_duration = currDuration
-                self.max_duration_step = step_report.step
+        
             
         self.range_scores = self.max_score - self.min_score
         self.range_durations = self.max_duration - self.min_duration
