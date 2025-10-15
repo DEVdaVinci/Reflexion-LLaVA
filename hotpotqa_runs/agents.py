@@ -35,6 +35,7 @@ import hashlib
 import pandas
 from PIL import Image
 import statistics
+import operator
 
 
 
@@ -61,115 +62,6 @@ def TimestampToStr(inTimestamp):
     
     timestamp_str = f"{year:04}{month:02}{day:02}{hour:02}{minute:02}{second:02}{microSecond:06}{nanoSecond:03}"
     return timestamp_str
-
-
-class RunReport:
-    def __init__(self, runReport_path, image_path, reflexion_strategy, run_id= None, duration= None, start_timestamp= None, end_timestamp= None, image_id= None, image_path_PLACEHOLDER= None, threshold= None, max_steps= None, agent_model_type= None, agent_model_name= None, agent_model_setting_temperature= None, agent_model_setting_max_tokens= None, agent_model_setting_misc= None, reflection_model_type= None, reflection_model_name= None, reflection_model_setting_temperature= None, reflection_model_setting_max_tokens= None, reflection_model_setting_misc= None, agent_prompt_template= None, reflection_prompt_template= None, is_successful= None, run_feedback= None):
-        self.timestamp = pandas.Timestamp.now(tz="UTC")
-
-        self.runReport_path = runReport_path
-        self.run_id = run_id
-        
-        self.duration = duration
-        
-        if start_timestamp == None:
-            self.start_timestamp = self.timestamp
-        else:
-            self.start_timestamp = start_timestamp
-        
-        self.end_timestamp = end_timestamp
-        
-        if image_id == None:
-            self.image_id = getImageID(image_path)
-        else:
-            self.image_id = image_id
-        
-        self.image_path = image_path
-
-        self.reflexion_strategy = reflexion_strategy
-
-        self.threshold = threshold
-        self.max_steps = max_steps
-        self.agent_model_type = agent_model_type
-        self.agent_model_name = agent_model_name
-        self.agent_model_setting_temperature = agent_model_setting_temperature
-        self.agent_model_setting_max_tokens = agent_model_setting_max_tokens
-        self.agent_model_setting_misc = agent_model_setting_misc
-        self.reflection_model_type = reflection_model_type
-        self.reflection_model_name = reflection_model_name
-        self.reflection_model_setting_temperature = reflection_model_setting_temperature
-        self.reflection_model_setting_max_tokens = reflection_model_setting_max_tokens
-        self.reflection_model_setting_misc = reflection_model_setting_misc
-        self.agent_prompt_template = agent_prompt_template
-        self.reflection_prompt_template = reflection_prompt_template
-        self.is_successful = is_successful
-        self.max_score = None
-        self.max_score_step = None
-        self.min_score = None
-        self.min_score_step = None
-        self.range_scores = None
-        self.stdev_scores = None
-        self.mean_scores = None
-        self.median_scores = None
-        self.mode_scores = None
-        self.variance_scores = None
-        self.run_feedback = run_feedback
-
-    def setRunID(self):
-        self.run_id = TimestampToStr(self.start_timestamp) + TimestampToStr(self.end_timestamp)
-
-    
-
-        
-    def createDictionary(self):
-        if self.end_timestamp == None:
-            self.end_timestamp = pandas.Timestamp.now(tz="UTC")
-        
-        if self.duration == None:
-            self.duration = self.end_timestamp - self.start_timestamp
-
-        if self.run_id == None:
-            self.setRunID()
-        
-        if self.image_id == None:
-            self.image_id = getImageID(self.image_path)
-
-        self.dictionary = {
-            'run_id': [self.run_id],
-            'duration': [self.duration],
-            'start_timestamp': [self.start_timestamp],
-            'end_timestamp': [self.end_timestamp],
-            'image_id': [self.image_id],
-            'image_path': [self.image_path],
-            'reflexion_strategy': [self.reflexion_strategy],
-            'threshold': [self.threshold],
-            'max_steps': [self.max_steps],
-            'agent_model_type': [self.agent_model_type],
-            'agent_model_name': [self.agent_model_name],
-            'agent_model_setting_temperature': [self.agent_model_setting_temperature],
-            'agent_model_setting_max_tokens': [self.agent_model_setting_max_tokens],
-            'agent_model_setting_misc': [self.agent_model_setting_misc],
-            'reflection_model_type': [self.reflection_model_type],
-            'reflection_model_name': [self.reflection_model_name],
-            'reflection_model_setting_temperature': [self.reflection_model_setting_temperature],
-            'reflection_model_setting_max_tokens': [self.reflection_model_setting_max_tokens],
-            'reflection_model_setting_misc': [self.reflection_model_setting_misc],
-            'agent_prompt_template': [self.agent_prompt_template],
-            'reflection_prompt_template': [self.reflection_prompt_template],
-            'is_successful': [self.is_successful],
-            'run_feedback': [self.run_feedback]
-        }
-    def createDataFrame(self):
-        self.createDictionary()
-        self.dataFrame = pandas.DataFrame(self.dictionary)
-        self.dataFrame.set_index('run_id', inplace=True)
-
-    def save(self, addIndexCol = True, addHeader = True):
-        self.createDataFrame()
-        self.dataFrame.to_csv(self.runReport_path, mode='a', index=addIndexCol, header=addHeader)
-    def saveTo(self, path, addIndexCol = True, addHeader = True):
-        self.createDataFrame()
-        self.dataFrame.to_csv(path, mode='a', index=addIndexCol, header=addHeader)
 
 
 class StepReport:
@@ -247,6 +139,215 @@ class StepReport:
         self.dataFrame.to_csv(self.stepReport_path, mode='a', index=addIndexCol, header=addHeader)
     def saveTo(self, path, addIndexCol = False, addHeader = True):
         self.createDataFrame()
+        self.dataFrame.to_csv(path, mode='a', index=addIndexCol, header=addHeader)
+
+
+class RunReport:
+    def __init__(self, runReport_path, image_path, reflexion_strategy, run_id= None, duration= None, start_timestamp= None, end_timestamp= None, image_id= None, image_path_PLACEHOLDER= None, threshold= None, max_steps= None, agent_model_type= None, agent_model_name= None, agent_model_setting_temperature= None, agent_model_setting_max_tokens= None, agent_model_setting_misc= None, reflection_model_type= None, reflection_model_name= None, reflection_model_setting_temperature= None, reflection_model_setting_max_tokens= None, reflection_model_setting_misc= None, agent_prompt_template= None, reflection_prompt_template= None, is_successful= None, run_feedback= None):
+        self.timestamp = pandas.Timestamp.now(tz="UTC")
+
+        self.runReport_path = runReport_path
+        self.run_id = run_id
+        
+        self.runReport_duration = duration
+        
+        if start_timestamp == None:
+            self.start_timestamp = self.timestamp
+        else:
+            self.start_timestamp = start_timestamp
+        
+        self.end_timestamp = end_timestamp
+        
+        if image_id == None:
+            self.image_id = getImageID(image_path)
+        else:
+            self.image_id = image_id
+        
+        self.image_path = image_path
+
+        self.reflexion_strategy = reflexion_strategy
+
+        self.threshold = threshold
+        self.max_steps = max_steps
+        self.agent_model_type = agent_model_type
+        self.agent_model_name = agent_model_name
+        self.agent_model_setting_temperature = agent_model_setting_temperature
+        self.agent_model_setting_max_tokens = agent_model_setting_max_tokens
+        self.agent_model_setting_misc = agent_model_setting_misc
+        self.reflection_model_type = reflection_model_type
+        self.reflection_model_name = reflection_model_name
+        self.reflection_model_setting_temperature = reflection_model_setting_temperature
+        self.reflection_model_setting_max_tokens = reflection_model_setting_max_tokens
+        self.reflection_model_setting_misc = reflection_model_setting_misc
+        self.agent_prompt_template = agent_prompt_template
+        self.reflection_prompt_template = reflection_prompt_template
+        self.is_successful = is_successful
+        #[Image Score Stats]
+        self.max_score = None #this is the max score
+        self.max_score_step = None #this is the index/step of the max score
+        self.min_score = None #this is the min score
+        self.min_score_step = None #this is the index/step of the min score
+        self.range_scores = None
+        self.stdev_scores = None
+        self.mean_score = None
+        self.median_score = None
+        self.mode_scores = None
+        self.variance_scores = None
+        self.linearRegression_scores = None
+        
+        #[Duration stats]
+        self.max_duration = None #this is the max duration
+        self.max_duration_step = None #this is the index/step of the max duration
+        self.min_duration = None #this is the min duration
+        self.min_duration_step = None #this is the index/step of the min duration
+        self.range_durations = None
+        self.stdev_durations = None
+        self.mean_duration = None
+        self.median_duration = None
+        self.mode_durations = None
+        self.variance_durations = None
+        self.run_feedback = run_feedback
+
+    def setRunID(self):
+        self.run_id = TimestampToStr(self.start_timestamp) + TimestampToStr(self.end_timestamp)
+
+    def stats(self, step_reports: list[StepReport]):
+        simScores_image = list(map(operator.__getattribute__("similarity_score"), step_reports))
+        durations = list(map(operator.__getattribute__("duration"), step_reports))
+        steps = list(map(operator.__getattribute__("step"), step_reports))
+        
+        
+        self.mean_score = statistics.mean(simScores_image)
+        self.median_score = statistics.median(simScores_image)
+        self.mode_scores = statistics.mode(simScores_image)
+        self.stdev_scores = statistics.stdev(simScores_image)
+        self.variance_scores = statistics.variance(simScores_image)
+        self.linearRegression_scores = statistics.linear_regression(simScores_image, steps)
+
+        self.mean_duration = statistics.mean(durations)
+        self.median_duration = statistics.median(durations)
+        self.mode_durations = statistics.mode(durations)
+        self.stdev_durations = statistics.stdev(durations)
+        self.variance_durations = statistics.variance(durations)
+        
+
+
+        self.min_score = self.mean_score
+        self.max_score = self.mean_score
+
+        self.min_duration = self.mean_duration
+        self.max_duration = self.mean_duration
+
+
+        
+
+
+
+        for step_report in step_reports:
+            currScore = step_report.similarity_score
+            currDuration = step_report.duration
+
+            if self.max_score < currScore:
+                self.max_score = currScore
+                self.max_score_step = step_report.step
+            elif currScore < self.min_score:
+                self.min_score = currScore
+                self.min_score_step = step_report.step
+            
+            
+            
+            
+            if currDuration < self.min_duration:
+                self.min_duration = currDuration
+                self.min_duration_step = step_report.step
+            elif currDuration > self.max_duration:
+                self.max_duration = currDuration
+                self.max_duration_step = step_report.step
+            
+        self.range_scores = self.max_score - self.min_score
+        self.range_durations = self.max_duration - self.min_duration
+            
+        
+        
+
+
+        
+    def createDictionary(self):
+        if self.end_timestamp == None:
+            self.end_timestamp = pandas.Timestamp.now(tz="UTC")
+        
+        if self.runReport_duration == None:
+            self.runReport_duration = self.end_timestamp - self.start_timestamp
+
+        if self.run_id == None:
+            self.setRunID()
+        
+        if self.image_id == None:
+            self.image_id = getImageID(self.image_path)
+
+        self.dictionary = {
+            'run_id': [self.run_id],
+            'duration': [self.runReport_duration],
+            'start_timestamp': [self.start_timestamp],
+            'end_timestamp': [self.end_timestamp],
+            'image_id': [self.image_id],
+            'image_path': [self.image_path],
+            'reflexion_strategy': [self.reflexion_strategy],
+            'threshold': [self.threshold],
+            'max_steps': [self.max_steps],
+            'agent_model_type': [self.agent_model_type],
+            'agent_model_name': [self.agent_model_name],
+            'agent_model_setting_temperature': [self.agent_model_setting_temperature],
+            'agent_model_setting_max_tokens': [self.agent_model_setting_max_tokens],
+            'agent_model_setting_misc': [self.agent_model_setting_misc],
+            'reflection_model_type': [self.reflection_model_type],
+            'reflection_model_name': [self.reflection_model_name],
+            'reflection_model_setting_temperature': [self.reflection_model_setting_temperature],
+            'reflection_model_setting_max_tokens': [self.reflection_model_setting_max_tokens],
+            'reflection_model_setting_misc': [self.reflection_model_setting_misc],
+            'agent_prompt_template': [self.agent_prompt_template],
+            'reflection_prompt_template': [self.reflection_prompt_template],
+            'is_successful': [self.is_successful],
+            'max_score': [self.max_score],
+            'max_score_step': [self.max_score_step],
+            'min_score': [self.min_score],
+            'min_score_step': [self.min_score_step],
+            'range_scores': [self.range_scores],
+            'stdev_scores': [self.stdev_scores],
+            'mean_score': [self.mean_score],
+            'median_score': [self.median_score],
+            'mode_scores': [self.mode_scores],
+            'variance_scores': [self.variance_scores],
+            'linear_regression_scores': [self.linearRegression_scores],
+            'max_duration': [self.max_duration],
+            'max_duration_step': [self.max_duration_step],
+            'min_duration': [self.min_duration],
+            'min_duration_step': [self.min_duration_step],
+            'range_durations': [self.range_durations],
+            'stdev_durations': [self.stdev_durations],
+            'mean_duration': [self.mean_duration],
+            'median_duration': [self.median_duration],
+            'mode_durations': [self.mode_durations],
+            'variance_durations': [self.variance_durations],
+            'run_feedback': [self.run_feedback]
+        }
+    def createDataFrame(self):
+        self.createDictionary()
+        self.dataFrame = pandas.DataFrame(self.dictionary)
+        self.dataFrame.set_index('run_id', inplace=True)
+
+    def save(self, addIndexCol = True, addHeader = True, updateDataFrame = True, calcStats = True, step_reports: list[StepReport] = []):
+        if calcStats and len(step_reports) > 0:
+            self.stats(step_reports)
+        elif calcStats and len(step_reports) == 0:
+            raise Exception("RunReport->save(): Expected step_reports but it was empty or missing!")
+
+        if updateDataFrame:
+            self.createDataFrame()
+        self.dataFrame.to_csv(self.runReport_path, mode='a', index=addIndexCol, header=addHeader)
+    def saveTo(self, path, addIndexCol = True, addHeader = True, updateDataFrame = True, calcStats = True):
+        if updateDataFrame:
+            self.createDataFrame()
         self.dataFrame.to_csv(path, mode='a', index=addIndexCol, header=addHeader)
 
 
@@ -904,21 +1005,23 @@ class CoTAgent:
     def saveReports(self):
         self.runReport.is_successful = self.is_correct(self.answer, self.originalImage)
         simScores = []
-        maxScore = 0.0
+        
+        #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        '''maxScore = 0.0
         minScore = 1.0
         maxScore_index: int
-        minScore_index: int
+        minScore_index: int'''
         for step_report in self.step_reports:
             step_report.run_id = self.runReport.run_id
             step_report.save()
-            simScores.append(step_report.similarity_score)
+            '''simScores.append(step_report.similarity_score)
             if maxScore < step_report.similarity_score:
                 maxScore = step_report.similarity_score
                 maxScore_index = step_report.step
             if step_report.similarity_score < minScore:
                 minScore = step_report.similarity_score
-                minScore_index = step_report.step
-        
+                minScore_index = step_report.step'''
+        '''
         self.runReport.max_score = maxScore
         self.runReport.max_score_step = maxScore_index
         self.runReport.min_score = minScore
@@ -936,12 +1039,14 @@ class CoTAgent:
             self.runReport.median_scores = simScores[0]
             self.runReport.mode_scores = simScores[0]
             self.runReport.variance_scores = 0
-        
+        '''
+        #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     
         
 
 
         self.runReport.save()
+        self.runReport.save(self, addIndexCol = True, addHeader = True, updateDataFrame = True, calcStats = True, step_reports = self.step_reports)
 
 '''
 class ReactAgent:
