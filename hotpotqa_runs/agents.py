@@ -219,14 +219,20 @@ class RunReport:
         durations = []
         steps = []
 
+        step_firstIndex = step_reports[0].step
+
         simScore_firstIndex_image = step_reports[0].similarity_score
         self.min_score = simScore_firstIndex_image
         self.max_score = simScore_firstIndex_image
+        self.min_score_step = step_firstIndex
+        self.max_score_step = step_firstIndex
 
         #duration is stored as a weird data type(pandas Timedelta) and must be converted to something simple such as seconds
         duration_firstIndex = step_reports[0].getDuration_seconds()
         self.min_duration = duration_firstIndex
         self.max_duration = duration_firstIndex
+        self.min_duration_step = step_firstIndex
+        self.max_duration_step = step_firstIndex
 
         for step_report in step_reports:
             currScore = step_report.similarity_score
