@@ -230,7 +230,7 @@ class RunReport:
 
         for step_report in step_reports:
             currScore = step_report.similarity_score
-            currDuration = step_report.getDuration_seconds
+            currDuration = step_report.getDuration_seconds()
             currStep = step_report.step
 
             simScores_image.append(currScore)
