@@ -141,6 +141,9 @@ class StepReport:
         self.createDataFrame()
         self.dataFrame.to_csv(path, mode='a', index=addIndexCol, header=addHeader)
 
+    def getDuration_seconds(self):
+        return self.duration.total_seconds()
+
 
 class RunReport:
     def __init__(self, runReport_path, image_path, reflexion_strategy, run_id= None, duration= None, start_timestamp= None, end_timestamp= None, image_id= None, image_path_PLACEHOLDER= None, threshold= None, max_steps= None, agent_model_type= None, agent_model_name= None, agent_model_setting_temperature= None, agent_model_setting_max_tokens= None, agent_model_setting_misc= None, reflection_model_type= None, reflection_model_name= None, reflection_model_setting_temperature= None, reflection_model_setting_max_tokens= None, reflection_model_setting_misc= None, agent_prompt_template= None, reflection_prompt_template= None, is_successful= None, run_feedback= None):
@@ -216,15 +219,18 @@ class RunReport:
         durations = []
         steps = []
 
-        self.min_score = step_reports[0].similarity_score
-        self.max_score = step_reports[0].similarity_score
+        simScore_firstIndex_image = step_reports[0].similarity_score
+        self.min_score = simScore_firstIndex_image
+        self.max_score = simScore_firstIndex_image
 
-        self.min_duration = step_reports[0].duration
-        self.max_duration = step_reports[0].duration
+        #duration is stored as a weird data type(pandas Timedelta) and must be converted to something simple such as seconds
+        duration_firstIndex = step_reports[0].getDuration_seconds()
+        self.min_duration = duration_firstIndex
+        self.max_duration = duration_firstIndex
 
         for step_report in step_reports:
             currScore = step_report.similarity_score
-            currDuration = step_report.duration
+            currDuration = step_report.getDuration_seconds
             currStep = step_report.step
 
             simScores_image.append(currScore)
