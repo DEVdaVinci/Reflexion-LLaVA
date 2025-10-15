@@ -1024,6 +1024,7 @@ class CoTAgent:
         self.generatedImagePath = inPathTogeneratedImageFolder + inInputImageFilename + "-generatedImage_" + timestamp_str + miscText + ".png"
 
     def saveReports(self):
+        print("Saving reports...")
         self.runReport.is_successful = self.is_correct(self.answer, self.originalImage)
         simScores = []
         
