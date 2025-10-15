@@ -232,7 +232,7 @@ class RunReport:
         self.min_duration_step = step_firstIndex
         self.max_duration_step = step_firstIndex
 
-        if(len(step_reports < 2)):
+        if(len(step_reports) < 2):
             self.mean_score = simScore_firstIndex_image
             self.median_score = simScore_firstIndex_image
             self.mode_scores = simScore_firstIndex_image
