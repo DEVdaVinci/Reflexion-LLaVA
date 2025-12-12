@@ -417,7 +417,7 @@ class ActionLLM:
 
         if modelType == "LLaVA":
             self.model_id = "llava-hf/llava-1.5-7b-hf"
-            self.settings = LLaVA_ModelSettings(name = "LLaVA", temperature = None, load_in_4bit = True, bnb_4bit_compute_dtype = torch.float16, model_id = "llava-hf/llava-1.5-7b-hf")
+            self.settings = LLaVA_ModelSettings(load_in_4bit = True, bnb_4bit_compute_dtype = torch.float16, model_id = "llava-hf/llava-1.5-7b-hf")
             
             #!!!!!
             self.quantization_config = BitsAndBytesConfig(
