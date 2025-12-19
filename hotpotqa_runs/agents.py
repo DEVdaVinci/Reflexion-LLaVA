@@ -404,7 +404,8 @@ class ModelSettings:
 
 
 class LLaVA_ModelSettings(ModelSettings):
-    def __init__(self, load_in_4bit = None, bnb_4bit_compute_dtype = None, model_id = None):
+    def __init__(self, type, name, temperature = None, maxTokens = None, kwargs = None, load_in_4bit = None, bnb_4bit_compute_dtype = None, model_id = None):
+        super.__init__(type, name, temperature, maxTokens, kwargs)
         self.load_in_4bit = load_in_4bit
         self.bnb_4bit_compute_dtype = bnb_4bit_compute_dtype
         self.model_id = model_id
@@ -415,9 +416,12 @@ class ActionLLM:
     def __init__(self, modelType):
         self.modelType = modelType
 
+
+        
+
         if modelType == "LLaVA":
             self.model_id = "llava-hf/llava-1.5-7b-hf"
-            self.settings = LLaVA_ModelSettings(load_in_4bit = True, bnb_4bit_compute_dtype = torch.float16, model_id = "llava-hf/llava-1.5-7b-hf")
+            self.settings = LLaVA_ModelSettings(type = self.modelType, name = "LLaVA", load_in_4bit = True, bnb_4bit_compute_dtype = torch.float16, model_id = "llava-hf/llava-1.5-7b-hf")
             
             #!!!!!
             self.quantization_config = BitsAndBytesConfig(
