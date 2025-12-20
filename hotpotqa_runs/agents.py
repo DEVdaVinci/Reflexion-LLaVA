@@ -405,7 +405,7 @@ class ModelSettings:
 
 class LLaVA_ModelSettings(ModelSettings):
     def __init__(self, type, name, temperature = None, maxTokens = None, kwargs = None, load_in_4bit = None, bnb_4bit_compute_dtype = None, model_id = None):
-        super.__init__(type, name, temperature, maxTokens, kwargs)
+        super().__init__(type, name, temperature, maxTokens, kwargs)
         self.load_in_4bit = load_in_4bit
         self.bnb_4bit_compute_dtype = bnb_4bit_compute_dtype
         self.model_id = model_id
