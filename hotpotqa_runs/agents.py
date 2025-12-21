@@ -455,7 +455,11 @@ class ActionLLM:
             inImage = inImages[0]
         else:
             inImage = inImages[1]
-        print(f"\nRunning {self.modelType} model with prompt: |{inPrompt}| ...\n")
+        
+        
+        print(f"|------------------------------------------------------->\n|\t=======      \tPrompt to {self.modelType}\t=========\t>\n|------------------------------------------------------->\n|>{inPrompt}<|\n<---------------------------------------------------------------|\n<\t=======      \tPrompt to {self.modelType}\t=========\t|\n<---------------------------------------------------------------|")
+        
+        
         if(self.modelType == "LLaVA"):
             return self.run_LLaVA(inPrompt, inImage, inMaxNewTokens)
         elif(self.modelType == "AnyOpenAILLM"):
@@ -732,7 +736,7 @@ class CoTAgent:
         
         self.similarityScore = None
         self.generatedImage = None
-        print("_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-")
+        print("_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-")
         
         if self.step_n == 1:
             self.scratchpad = "N/A (This is the first trial)"
@@ -745,7 +749,7 @@ class CoTAgent:
         self.stepReport.agent_response = modelOutput
 
         # Think
-        print(f"Model output: {modelOutput}")
+        print(f"|--------------------------------------------------------------->\n|\t=======\t     Response from {self.actionLLM_modelType}\t=========\t>\n|--------------------------------------------------------------->\n|>{modelOutput}<|\n<---------------------------------------------------------------|\n<\t=======\t     Response from {self.actionLLM_modelType}\t=========\t|\n<---------------------------------------------------------------|")
         self.thought = self.formatAgentResponse(modelOutput, "thought")
         self.scratchpad += f'\nThought:'
         print(f"Adding processed thought to scratchpad: |{self.thought}|...")
@@ -788,8 +792,9 @@ class CoTAgent:
             print('Answer is INCORRECT')
         '''
         self.finished = True
-        print("-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_")
-        print(f"Finished step!\n[Scratch Pad]\n{self.scratchpad}\n\n")
+        print("................................................................................................")
+        print(f"Finished step #{self.step_n}!\n[Scratch Pad]\n{self.scratchpad}\n\n")
+        print("-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_")
         self.modelOutputs.append(modelOutput)
         self.previousScratchpad = self.scratchpad
         
@@ -1014,7 +1019,7 @@ class CoTAgent:
 
             newResponse = inResponse[startIndex:endIndex]
         else:
-            targetStrings = ["ASSISTANT: ", "PROMPT: ", "Prompt:", "Thought: ", "Thought:", "Finish[prompt]: "]
+            targetStrings = ["ASSISTANT: ", "PROMPT: ", "Prompt:", "Thought: ", "Thought:", "Finish[prompt]: ", "[Prompt Start]"]
             for targetString in targetStrings:
                 startIndex = tempResponse.find(targetString)
                 if(startIndex > -1):
