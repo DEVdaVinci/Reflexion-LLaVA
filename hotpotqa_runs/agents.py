@@ -473,11 +473,12 @@ class ActionLLM:
         self.settings.maxTokens = max_new_tokens
 
         if image != None:
-            outputs = self.model(image, prompt=prompt, generate_kwargs={"max_new_tokens": max_new_tokens})
+            response = self.model(image, prompt=prompt, generate_kwargs={"max_new_tokens": max_new_tokens})
         else:
-            outputs = self.model(prompt=prompt, generate_kwargs={"max_new_tokens": max_new_tokens})
-        #return outputs
-        return outputs[0]["generated_text"]#!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            response = self.model(prompt=prompt, generate_kwargs={"max_new_tokens": max_new_tokens})
+        extractedText = response[0]["generated_text"]
+
+        return extractedText, response#!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     def run_AnyOpenAILLM(self, prompt):
         print("UNDER CONSTRUCTION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         return self.model(prompt)
@@ -534,7 +535,8 @@ class ActionLLM:
         )
         extractedText = response.choices[0].message.content
 
-        return extractedText
+
+        return extractedText, response
     def run_OpenAI(self, inPrompt, inImages = [], inMaxNewTokens = 300):
         if(inMaxNewTokens == None):
             max_new_tokens = 300
@@ -586,7 +588,7 @@ class ActionLLM:
         )
         extractedText = response.choices[0].message.content
 
-        return extractedText
+        return extractedText, response
     
 
     
@@ -826,9 +828,9 @@ class CoTAgent:
     
     def prompt_reflection(self) -> str:
         self.stepReport.reflection_prompt = self._build_reflection_prompt()
-        self.response_raw = self.self_reflect_llm.run(self.stepReport.reflection_prompt, [self.originalImage, self.generatedImage])
-        self.stepReport.reflection_response = format_step(self.response_raw)
-        return self.stepReport.reflection_response
+        self.reflectionResponse_text_raw, self.reflectionResponse_raw  = self.self_reflect_llm.run(self.stepReport.reflection_prompt, [self.originalImage, self.generatedImage])
+        self.reflectionResponse_text = format_step(self.reflectionResponse_text_raw)
+        return self.reflectionResponse_text
 
     def reset(self) -> None:
         self.scratchpads.append(self.scratchpad)
@@ -860,11 +862,14 @@ class CoTAgent:
         if(self.actionLLM_modelType == "LLaVA"):
             #tempPrompt = "Generate a prompt that could be used to generate a similar image."
             self.stepReport.agent_prompt = self._build_agent_prompt()
-            modelOutput = self.action_llm.run(self.stepReport.agent_prompt, [inImage])
+            self.agentResponse_text_raw, self.agentResponse_raw = self.action_llm.run(self.stepReport.agent_prompt, [inImage])
+            self.agentResponse_text = self.agentResponse_text_raw
         else:
             self.stepReport.agent_prompt = self._build_agent_prompt()
-            modelOutput = format_step(self.action_llm.run(self.stepReport.agent_prompt, [inImage]))
-        return modelOutput
+            self.agentResponse_text_raw, self.agentResponse_raw = self.action_llm.run(self.stepReport.agent_prompt, [inImage])
+            
+            self.agentResponse_text = format_step(self.agentResponse_text_raw)
+        return self.agentResponse_text_raw
     
     
     
