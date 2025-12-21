@@ -826,7 +826,8 @@ class CoTAgent:
     
     def prompt_reflection(self) -> str:
         self.stepReport.reflection_prompt = self._build_reflection_prompt()
-        self.stepReport.reflection_response = format_step(self.self_reflect_llm.run(self.stepReport.reflection_prompt, [self.originalImage, self.generatedImage]))
+        self.response_raw = self.self_reflect_llm.run(self.stepReport.reflection_prompt, [self.originalImage, self.generatedImage])
+        self.stepReport.reflection_response = format_step(self.response_raw)
         return self.stepReport.reflection_response
 
     def reset(self) -> None:
