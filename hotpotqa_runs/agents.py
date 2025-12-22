@@ -1008,39 +1008,30 @@ class CoTAgent:
        
     def formatAgentResponse(self, inResponse: str, responseType: str = None) -> str:
         tempResponse = inResponse
-        if(self.actionLLM_modelType == "LLaVA"):
+        if (self.actionLLM_modelType == "LLaVA"):
             targetString = "ASSISTANT: "
             startIndex = tempResponse.find(targetString)
-            if(startIndex > -1):
+            if (startIndex > -1):
                 lenTarget = len(targetString)
                 targetIndex = startIndex + lenTarget
                 inResponse = tempResponse[targetIndex:]
                 tempResponse = inResponse
 
-                
-        
-        if(responseType in ["thought", "action"]):
-            if(responseType == "thought"):
-                startString = "[Thought Start]"
-                endString = "[Thought End]"
-            elif(responseType == "action"):
-                startString = "[Prompt Start]"
-                endString = "[Prompt End]"
-            
-            startIndex = inResponse.find(startString) + len(startString)
-            endIndex = inResponse.find(endString)
+        targetStrings = ["ASSISTANT: ", "PROMPT: ", "Prompt:", "Thought: ", "Thought:", "[Thought Start]", "[Thought End]"]
+        if (responseType == "action"):
+            targetStrings.extend(["Finish[prompt]: ", "[Prompt Start]", "[Prompt End]", "Action: ", "Action:", "Observation: ", "Observation:"])
 
-            newResponse = inResponse[startIndex:endIndex]
-        else:
-            targetStrings = ["ASSISTANT: ", "PROMPT: ", "Prompt:", "Thought: ", "Thought:", "Finish[prompt]: ", "[Prompt Start]"]
-            for targetString in targetStrings:
-                startIndex = tempResponse.find(targetString)
-                if(startIndex > -1):
-                    lenTarget = len(targetString)
-                    targetIndex = startIndex + lenTarget
-                    tempResponse = tempResponse[targetIndex:]
-                
-            newResponse = tempResponse
+
+        for targetString in targetStrings:
+            startIndex = tempResponse.find(targetString)
+            if (startIndex > -1):
+                lenTarget = len(targetString)
+                targetIndex = startIndex + lenTarget
+                newResponse = tempResponse[:startIndex]
+                print(f"\t[{targetString}]")
+                print(f"\t\t{newResponse}")
+                print("\t----------------------------")
+                tempResponse = tempResponse[targetIndex:]
             
         return newResponse
     
