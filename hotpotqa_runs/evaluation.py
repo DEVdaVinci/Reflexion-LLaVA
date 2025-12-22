@@ -10,20 +10,27 @@ import lpips
 
 class StableDiffusionEval_test:
     def __init__(self):
-        #self.modelType = modelType
-        #self.pipeline = DiffusionPipeline.from_pretrained("runwayml/stable-diffusion-v1-5")
-        #self.pipeline.to("cuda")
         #This is necessary for the similarity metric
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model, self.preprocess = clip.load("ViT-B/32", device=self.device)
+
+        self.pipeline = DiffusionPipeline.from_pretrained("runwayml/stable-diffusion-v1-5")
+        self.pipeline.to("cuda")
+
+        # Load alex LPIPS model
+        self.lpips_model_alex = lpips.LPIPS(net='alex')  # Use 'vgg' for VGG features
+        # Load vgg LPIPS model
+        self.lpips_model_vgg = lpips.LPIPS(net='vgg')  # 'alex', 'vgg', or 'squeeze' network
+        # Load squeeze LPIPS model
+        self.lpips_model_squeeze = lpips.LPIPS(net='squeeze')  # 'alex', 'vgg', or 'squeeze' network
+        
     def evaluatePrompt(self, prompt, originalImage, doPrint = False):
         generatedImage = self.generateImage(prompt)
         similarityScore = self.evaluateGeneratedImage(image_og = originalImage, image_generated = generatedImage, doPrint = doPrint)
         return similarityScore, generatedImage
     def generateImage(self, prompt: str):
         print(f"\n!!!!!!!!!!\nGenerating image with this prompt: {prompt}...\n!!!!!!!!!!\n")
-        self.pipeline = DiffusionPipeline.from_pretrained("runwayml/stable-diffusion-v1-5")
-        self.pipeline.to("cuda")
+        
         
         generatedImage = self.pipeline(prompt).images[0]
         return generatedImage
@@ -62,26 +69,22 @@ class StableDiffusionEval_test:
 
 
 
-        # Load LPIPS model
-        lpips_model_alex = lpips.LPIPS(net='alex')  # Use 'vgg' for VGG features
+        
+
         # Compute LPIPS distance (lower = more similar)
-        lpips_score_alex = lpips_model_alex(img1, img2).item()
+        lpips_score_alex = self.lpips_model_alex(img1, img2).item()
         lpips_simScore_alex = 1 - lpips_score_alex  # Convert to similarity score (higher = more similar)
         if doPrint:
             print(f"LPIPS Perceptual Similarity Score (Alex): {lpips_simScore_alex}")
 
-        # Load LPIPS model
-        loss_fn_vgg = lpips.LPIPS(net='vgg')  # 'alex', 'vgg', or 'squeeze' network
         # Compute perceptual similarity
-        lpips_score_vgg = loss_fn_vgg(img1, img2).item()
+        lpips_score_vgg = self.lpips_model_vgg(img1, img2).item()
         lpips_simScore_vgg = 1 - lpips_score_vgg  # Convert to similarity score (higher = more similar)
         if doPrint:
             print(f"LPIPS Perceptual Similarity (VGG): {lpips_simScore_vgg}")
 
-        # Load LPIPS model
-        loss_fn_squeeze = lpips.LPIPS(net='squeeze')  # 'alex', 'vgg', or 'squeeze' network
         # Compute perceptual similarity
-        lpips_score_squeeze = loss_fn_squeeze(img1, img2).item()
+        lpips_score_squeeze = self.lpips_model_squeeze(img1, img2).item()
         lpips_simScore_squeeze = 1 - lpips_score_squeeze  # Convert to similarity score (higher = more similar)
         if doPrint:
             print(f"LPIPS Perceptual Similarity (Squeeze): {lpips_simScore_squeeze}")

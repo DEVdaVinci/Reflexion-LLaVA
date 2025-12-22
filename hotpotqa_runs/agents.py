@@ -680,6 +680,8 @@ class CoTAgent:
             self.stepReport_path = stepReport_path
         self.step_reports: list[StepReport] = []
 
+        self.evaluator = StableDiffusionEval_test()
+        
         
         
 
@@ -967,30 +969,37 @@ class CoTAgent:
 
     
     def calcSimScoreAndOutImage(self, modelOutput, inImage):
-        evaluator = StableDiffusionEval_test()
-        similarityScore, outGeneratedImage = evaluator.evaluatePrompt(modelOutput, inImage, self.doPrint)
+        similarityScore, outGeneratedImage = self.evaluator.evaluatePrompt(modelOutput, inImage, self.doPrint)
         self.generatedImage = outGeneratedImage
         self.similarityScore = similarityScore
         
-        print("Displaying generated image...")
-        print("self.generatedImage.show():")
-        self.generatedImage.show()
-        print("self.generatedImage:")
-        self.generatedImage
-        print("display generated image COMPLETE")
 
-    def is_correct(self, modelOutput, inImage) -> bool:   
-        if self.similarityScore == None:
+    def is_correct(self, modelOutput, inImage, doUpdateScore = None, doUpdateScratchpad = None) -> bool:   
+        if doUpdateScore == None:
+            if self.similarityScore == None:
+                doUpdateScore = True
+            else:
+                doUpdateScore = False
+        
+        if doUpdateScratchpad == None:
+            if self.similarityScore == None:
+                doUpdateScratchpad = True
+            else:
+                doUpdateScratchpad = False
+        
+        if doUpdateScore:
             self.calcSimScoreAndOutImage(modelOutput, inImage)
 
         if self.similarityScore > self.threshold:
-            self.scratchpad += 'Answer is CORRECT'
+            if doUpdateScratchpad:
+                self.scratchpad += 'Answer is CORRECT'
             print('Answer is CORRECT')
             return True
         else:
-            self.scratchpad += 'Answer is INCORRECT!' + ' Similarity Score: ' +  str(self.similarityScore) + " (Which failed to surpass the goal of " + str(self.threshold) + ")"
+            if doUpdateScratchpad:
+                self.scratchpad += 'Answer is INCORRECT!' + ' Similarity Score: ' +  str(self.similarityScore) + " (Which failed to surpass the goal of " + str(self.threshold) + ")"
+                self.previousScratchpad = self.scratchpad
             print('Answer is INCORRECT')
-            self.previousScratchpad = self.scratchpad
             return False
        
     def formatAgentResponse(self, inResponse: str, responseType: str = None) -> str:
