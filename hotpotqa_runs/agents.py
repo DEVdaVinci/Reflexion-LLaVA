@@ -630,6 +630,8 @@ class CoTAgent:
                     reflect_prompt: PromptTemplate = i2p_reflect_prompt,
                     cot_examples: str = COT,#!!!!!!!!!!!!!!!!!!!!!!
                     reflect_examples: str = COT_REFLECT,#!!!!!!!!!!
+                    reflectLLM_maxTokens: int = 500,
+                    actionLLM_maxTokens: int = 500,
                     reflectLLM_modelType: str = "AnyOpenAILLM",
                     actionLLM_modelType: str = "LLaVA",
                     threshold: float = 0.90,
@@ -651,6 +653,8 @@ class CoTAgent:
         self.reflect_examples = reflect_examples
         self.reflectLLM_modelType = reflectLLM_modelType
         self.actionLLM_modelType = actionLLM_modelType
+        self.reflectLLM_maxTokens = reflectLLM_maxTokens
+        self.actionLLM_maxTokens = actionLLM_maxTokens
         self.self_reflect_llm = ActionLLM(reflectLLM_modelType)
         self.action_llm = ActionLLM(actionLLM_modelType)
         self.threshold = threshold
@@ -835,7 +839,7 @@ class CoTAgent:
     
     def prompt_reflection(self) -> str:
         self.stepReport.reflection_prompt = self._build_reflection_prompt()
-        self.reflectionResponse_text_raw, self.reflectionResponse_raw  = self.self_reflect_llm.run(self.stepReport.reflection_prompt, [self.originalImage, self.generatedImage])
+        self.reflectionResponse_text_raw, self.reflectionResponse_raw  = self.self_reflect_llm.run(self.stepReport.reflection_prompt, [self.originalImage, self.generatedImage], inMaxNewTokens=self.reflectLLM_maxTokens)
         self.reflectionResponse_text = format_step(self.reflectionResponse_text_raw)
         return self.reflectionResponse_text
 
@@ -869,11 +873,11 @@ class CoTAgent:
         if(self.actionLLM_modelType == "LLaVA"):
             #tempPrompt = "Generate a prompt that could be used to generate a similar image."
             self.stepReport.agent_prompt = self._build_agent_prompt()
-            self.agentResponse_text_raw, self.agentResponse_raw = self.action_llm.run(self.stepReport.agent_prompt, [inImage])
+            self.agentResponse_text_raw, self.agentResponse_raw = self.action_llm.run(self.stepReport.agent_prompt, [inImage], inMaxNewTokens=self.actionLLM_maxTokens)
             self.agentResponse_text = self.agentResponse_text_raw
         else:
             self.stepReport.agent_prompt = self._build_agent_prompt()
-            self.agentResponse_text_raw, self.agentResponse_raw = self.action_llm.run(self.stepReport.agent_prompt, [inImage])
+            self.agentResponse_text_raw, self.agentResponse_raw = self.action_llm.run(self.stepReport.agent_prompt, [inImage], inMaxNewTokens=self.actionLLM_maxTokens)
             
             self.agentResponse_text = format_step(self.agentResponse_text_raw)
         return self.agentResponse_text_raw
