@@ -448,7 +448,7 @@ class ActionLLM:
             self.settings = ModelSettings(type = self.modelType, name = self.modelType)
             print(f"self.model type is: {self.modelType}")
             print(f"The model type is: {modelType}")
-    def run(self, inPrompt, inImages = [], inMaxNewTokens = None):
+    def run(self, inPrompt, inImages = [], inMaxNewTokens = None, maxAttempts: int = 1):
         if(len(inImages) == 0):
             inImage = None
         elif(len(inImages) == 1):
@@ -461,14 +461,14 @@ class ActionLLM:
         
         
         if(self.modelType == "LLaVA"):
-            return self.run_LLaVA(inPrompt, inImage, inMaxNewTokens)
+            return self.run_LLaVA(inPrompt, inImage, inMaxNewTokens, maxAttempts=maxAttempts)
         elif(self.modelType == "AnyOpenAILLM"):
             return self.run_AnyOpenAILLM(inPrompt)
         elif self.modelType == "gpt-vision" and len(inImages) == 2:
-            return self.run_GPT_4o(inPrompt, inImages, inMaxNewTokens)
+            return self.run_GPT_4o(inPrompt, inImages, inMaxNewTokens, maxAttempts)
         else:
-            return self.run_OpenAI(inPrompt, inImages, inMaxNewTokens)
-    def run_LLaVA(self, prompt, image = None, inMaxNewTokens = 400):
+            return self.run_OpenAI(inPrompt, inImages, inMaxNewTokens, maxAttempts)
+    def run_LLaVA(self, prompt, image = None, inMaxNewTokens = 400, maxAttempts: int = 1):
         if(inMaxNewTokens == None):
             max_new_tokens = 200
         else:
@@ -476,18 +476,24 @@ class ActionLLM:
         
         self.settings.maxTokens = max_new_tokens
 
-        if image != None:
-            response = self.model(image, prompt=prompt, generate_kwargs={"max_new_tokens": max_new_tokens})
-        else:
-            response = self.model(prompt=prompt, generate_kwargs={"max_new_tokens": max_new_tokens})
-        extractedText = response[0]["generated_text"]
+        extractedText = None
+        numAttempts = 0
+        #If a call to the llm fails retry until you suceed or reach maximum number attempts
+        while extractedText == None and numAttempts >= maxAttempts:
+            if image != None:
+                response = self.model(image, prompt=prompt, generate_kwargs={"max_new_tokens": max_new_tokens})
+            else:
+                response = self.model(prompt=prompt, generate_kwargs={"max_new_tokens": max_new_tokens})
+            extractedText = response[0]["generated_text"]
+            numAttempts+=1
+            
 
         return extractedText, response#!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     def run_AnyOpenAILLM(self, prompt):
         print("UNDER CONSTRUCTION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         return self.model(prompt)
         
-    def run_GPT_4o(self, inPrompt, inImages = [], inMaxNewTokens = 500):
+    def run_GPT_4o(self, inPrompt, inImages = [], inMaxNewTokens = 500, maxAttempts: int = 1):
         if(inMaxNewTokens == None):
             max_new_tokens = 300
         else:
@@ -523,25 +529,31 @@ class ActionLLM:
         '''
         client = OpenAI_openai()  # reads OPENAI_API_KEY from env
 
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": inPrompt},
-                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{originalImage_b64}"},},
-                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{generatedImage_b64}"},},
-                    ],
-                }
-            ],
-            max_tokens=self.settings.maxTokens,
-        )
-        extractedText = response.choices[0].message.content
+        extractedText = None
+        numAttempts = 0
+        #If a call to the llm fails retry until you suceed or reach maximum number attempts
+        while extractedText == None and numAttempts >= maxAttempts:
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": inPrompt},
+                            {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{originalImage_b64}"},},
+                            {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{generatedImage_b64}"},},
+                        ],
+                    }
+                ],
+                max_tokens=self.settings.maxTokens,
+            )
+            extractedText = response.choices[0].message.content
+            numAttempts+=1
+        
 
 
         return extractedText, response
-    def run_OpenAI(self, inPrompt, inImages = [], inMaxNewTokens = 300):
+    def run_OpenAI(self, inPrompt, inImages = [], inMaxNewTokens = 300, maxAttempts: int = 1):
         if(inMaxNewTokens == None):
             max_new_tokens = 300
         else:
@@ -580,17 +592,23 @@ class ActionLLM:
 
         client = OpenAI_openai()  # reads OPENAI_API_KEY from env
 
-        response = client.chat.completions.create(
-            model=self.modelType,
-            messages=[
-                {
-                    "role": "user",
-                    "content": promptContent,
-                }
-            ],
-            max_tokens=self.settings.maxTokens,
-        )
-        extractedText = response.choices[0].message.content
+        extractedText = None
+        numAttempts = 0
+        #If a call to the llm fails retry until you suceed or reach maximum number attempts
+        while extractedText == None and numAttempts >= maxAttempts:
+            response = client.chat.completions.create(
+                model=self.modelType,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": promptContent,
+                    }
+                ],
+                max_tokens=self.settings.maxTokens,
+            )
+            extractedText = response.choices[0].message.content
+            numAttempts+=1
+        
 
         return extractedText, response
     
@@ -636,6 +654,7 @@ class CoTAgent:
                     actionLLM_modelType: str = "LLaVA",
                     threshold: float = 0.90,
                     maxStep: int = 3,
+                    maxAttemptsToCallLLM: int = 1,
                     simplePromptMode = False,
                     reportFolder_path = "../reports/",
                     runReport_path = None,
@@ -659,8 +678,10 @@ class CoTAgent:
         self.action_llm = ActionLLM(actionLLM_modelType)
         self.threshold = threshold
         self.maxStep = maxStep
+        self.maxAtteptsToCallLLM = maxAttemptsToCallLLM
         self.simplePromptMode = simplePromptMode
         self.doPrint = doPrint
+
 
         self.reflections: List[str] = []
         self.reflections_str = ''
@@ -837,9 +858,11 @@ class CoTAgent:
             raise NotImplementedError(f'Unknown reflection strategy: {strategy}')
         print(self.reflections_str)
     
-    def prompt_reflection(self) -> str:
+    def prompt_reflection(self, maxAttempts: int = 1) -> str:
         self.stepReport.reflection_prompt = self._build_reflection_prompt()
-        self.reflectionResponse_text_raw, self.reflectionResponse_raw  = self.self_reflect_llm.run(self.stepReport.reflection_prompt, [self.originalImage, self.generatedImage], inMaxNewTokens=self.reflectLLM_maxTokens)
+        self.reflectionResponse_text_raw = None
+        self.reflectionResponse_raw = None
+        self.reflectionResponse_text_raw, self.reflectionResponse_raw  = self.self_reflect_llm.run(self.stepReport.reflection_prompt, [self.originalImage, self.generatedImage], inMaxNewTokens=self.reflectLLM_maxTokens, maxAttempts=self.maxAtteptsToCallLLM)
         self.reflectionResponse_text = format_step(self.reflectionResponse_text_raw)
         return self.reflectionResponse_text
 
@@ -1007,34 +1030,47 @@ class CoTAgent:
             return False
        
     def formatAgentResponse(self, inResponse: str, responseType: str = None) -> str:
-        tempResponse = inResponse
+        
         if (self.actionLLM_modelType == "LLaVA"):
             targetString = "ASSISTANT: "
-            startIndex = tempResponse.find(targetString)
+            startIndex = inResponse.find(targetString)
             if (startIndex > -1):
                 lenTarget = len(targetString)
                 targetIndex = startIndex + lenTarget
-                inResponse = tempResponse[targetIndex:]
-                tempResponse = inResponse
+                tempResponse = inResponse[targetIndex:]
+        else:
+            tempResponse = inResponse
 
-        targetStrings = ["ASSISTANT: ", "PROMPT: ", "Prompt:", "Thought: ", "Thought:", "[Thought Start]", "[Thought End]"]
-        if (responseType == "action"):
-            targetStrings.extend(["Finish[prompt]: ", "[Prompt Start]", "[Prompt End]", "Action: ", "Action:", "Observation: ", "Observation:"])
+        newResponse = tempResponse
 
 
-        for targetString in targetStrings:
-            startIndex = tempResponse.find(targetString)
+        if(responseType == "thought"):
+            targetStartStrings = ["[Thought Start]", "Thought: ", "Thought:", "Action: ", "Action:"]
+            targetEndStrings = ["[Thought End]", "Action: ", "Action:", "Observation: ", "Observation:"]
+        elif(responseType == "action"):
+            targetStartStrings = ["[Prompt Start]", "Finish [prompt]: ", "Finish [prompt]:", "Finish[prompt]: ", "Finish[prompt]:", "PROMPT: ", "PROMPT:", "Prompt: ", "Prompt:", "Action: ", "Action:"]
+            targetEndStrings = ["[Prompt End]", "Observation: ", "Observation:"]
+        else:
+            targetStartStrings = ["Action: ", "Action:", "[Prompt Start]", "Finish [prompt]: ", "Finish [prompt]:", "Finish[prompt]: ", "Finish[prompt]:", "PROMPT: ", "PROMPT:", "Prompt: ", "Prompt:", "[Thought Start]", "Thought: ", "Thought:"]
+            targetEndStrings = ["[Prompt End]", "[Thought End]", "Action: ", "Action:", "Observation: ", "Observation:"]
+        
+
+        for targetString_start in targetStartStrings:
+            startIndex = tempResponse.find(targetString_start)
             if (startIndex > -1):
-                lenTarget = len(targetString)
-                targetIndex = startIndex + lenTarget
-                newResponse = tempResponse[:startIndex]
-                print(f"\t[{targetString}]")
-                print(f"\t\t{newResponse}")
-                print("\t----------------------------")
-                tempResponse = tempResponse[targetIndex:]
-            
+                lenTarget_start = len(targetString_start)
+                startIndex = startIndex + lenTarget_start
+                
+                targetResponse = tempResponse[startIndex:]
+
+                for targetString_end in targetEndStrings:
+                    endIndex = targetResponse.find(targetString_end)
+                    if (endIndex > -1):
+                        newResponse = targetResponse[:endIndex]
+                        return newResponse
+                return targetResponse
         return newResponse
-    
+        
         
     def formatAgentResponse_og(self, inThought: str) -> str:
         if(self.actionLLM_modelType == "LLaVA"):
