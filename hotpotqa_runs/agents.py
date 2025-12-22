@@ -479,7 +479,7 @@ class ActionLLM:
         extractedText = None
         numAttempts = 0
         #If a call to the llm fails retry until you suceed or reach maximum number attempts
-        while extractedText == None and numAttempts >= maxAttempts:
+        while extractedText == None and numAttempts < maxAttempts:
             if image != None:
                 response = self.model(image, prompt=prompt, generate_kwargs={"max_new_tokens": max_new_tokens})
             else:
@@ -532,7 +532,7 @@ class ActionLLM:
         extractedText = None
         numAttempts = 0
         #If a call to the llm fails retry until you suceed or reach maximum number attempts
-        while extractedText == None and numAttempts >= maxAttempts:
+        while extractedText == None and numAttempts < maxAttempts:
             response = client.chat.completions.create(
                 model="gpt-4o",
                 messages=[
@@ -595,7 +595,7 @@ class ActionLLM:
         extractedText = None
         numAttempts = 0
         #If a call to the llm fails retry until you suceed or reach maximum number attempts
-        while extractedText == None and numAttempts >= maxAttempts:
+        while extractedText == None and numAttempts < maxAttempts:
             response = client.chat.completions.create(
                 model=self.modelType,
                 messages=[
