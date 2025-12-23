@@ -534,7 +534,7 @@ class ActionLLM:
         numAttempts = 0
         #If a call to the llm fails retry until you suceed or reach maximum number attempts
         while extractedText == None and numAttempts < maxAttempts:
-            print(f"|------------------------------------------------------->\n|\t=======      \tPrompt to {self.modelType}\t=========\t>\n|------------------------------------------------------->\n|>{prompt}<|\n<---------------------------------------------------------------|\n<\t=======      \tPrompt to {self.modelType}\t=========\t|\n<---------------------------------------------------------------|")
+            print(f"|------------------------------------------------------->\n|\t=======      \tPrompt to {self.modelType}\t=========\t>\n|------------------------------------------------------->\n|>{inPrompt}<|\n<---------------------------------------------------------------|\n<\t=======      \tPrompt to {self.modelType}\t=========\t|\n<---------------------------------------------------------------|")
             response = client.chat.completions.create(
                 model="gpt-4o",
                 messages=[
@@ -598,7 +598,7 @@ class ActionLLM:
         numAttempts = 0
         #If a call to the llm fails retry until you suceed or reach maximum number attempts
         while extractedText == None and numAttempts < maxAttempts:
-            print(f"|------------------------------------------------------->\n|\t=======      \tPrompt to {self.modelType}\t=========\t>\n|------------------------------------------------------->\n|>{prompt}<|\n<---------------------------------------------------------------|\n<\t=======      \tPrompt to {self.modelType}\t=========\t|\n<---------------------------------------------------------------|")
+            print(f"|------------------------------------------------------->\n|\t=======      \tPrompt to {self.modelType}\t=========\t>\n|------------------------------------------------------->\n|>{inPrompt}<|\n<---------------------------------------------------------------|\n<\t=======      \tPrompt to {self.modelType}\t=========\t|\n<---------------------------------------------------------------|")
             response = client.chat.completions.create(
                 model=self.settings.name,
                 messages=[
