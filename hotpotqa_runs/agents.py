@@ -1041,6 +1041,8 @@ class CoTAgent:
                 lenTarget = len(targetString)
                 targetIndex = startIndex + lenTarget
                 tempResponse = inResponse[targetIndex:]
+            else:
+                tempResponse = inResponse
         else:
             tempResponse = inResponse
 
