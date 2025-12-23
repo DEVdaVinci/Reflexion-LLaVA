@@ -600,7 +600,7 @@ class ActionLLM:
         while extractedText == None and numAttempts < maxAttempts:
             print(f"|------------------------------------------------------->\n|\t=======      \tPrompt to {self.modelType}\t=========\t>\n|------------------------------------------------------->\n|>{prompt}<|\n<---------------------------------------------------------------|\n<\t=======      \tPrompt to {self.modelType}\t=========\t|\n<---------------------------------------------------------------|")
             response = client.chat.completions.create(
-                model=self.modelType,
+                model=self.settings.name,
                 messages=[
                     {
                         "role": "user",
