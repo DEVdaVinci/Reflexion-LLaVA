@@ -899,11 +899,11 @@ class CoTAgent:
         if(self.actionLLM_modelType == "LLaVA"):
             #tempPrompt = "Generate a prompt that could be used to generate a similar image."
             self.stepReport.agent_prompt = self._build_agent_prompt()
-            self.agentResponse_text_raw, self.agentResponse_raw = self.action_llm.run(self.stepReport.agent_prompt, [inImage], inMaxNewTokens=self.actionLLM_maxTokens)
+            self.agentResponse_text_raw, self.agentResponse_raw = self.action_llm.run(self.stepReport.agent_prompt, [inImage], inMaxNewTokens=self.actionLLM_maxTokens, maxAtteptsToCallLLM=self.maxAtteptsToCallLLM)
             self.agentResponse_text = self.agentResponse_text_raw
         else:
             self.stepReport.agent_prompt = self._build_agent_prompt()
-            self.agentResponse_text_raw, self.agentResponse_raw = self.action_llm.run(self.stepReport.agent_prompt, [inImage], inMaxNewTokens=self.actionLLM_maxTokens)
+            self.agentResponse_text_raw, self.agentResponse_raw = self.action_llm.run(self.stepReport.agent_prompt, [inImage], inMaxNewTokens=self.actionLLM_maxTokens, maxAtteptsToCallLLM=self.maxAtteptsToCallLLM)
             
             self.agentResponse_text = format_step(self.agentResponse_text_raw)
         return self.agentResponse_text_raw
