@@ -1009,7 +1009,9 @@ class CoTAgent:
     def calcSimScoreAndOutImage(self, modelOutput, inImage):
         if(modelOutput == "N\A"):
             similarityScore = 0
-            outGeneratedImage = None
+
+            blankImg = Image.new("RGBA", (512, 512), (0, 0, 0, 0))
+            outGeneratedImage = blankImg
         else:
             similarityScore, outGeneratedImage = self.evaluator.evaluatePrompt(modelOutput, inImage, self.doPrint)
         
