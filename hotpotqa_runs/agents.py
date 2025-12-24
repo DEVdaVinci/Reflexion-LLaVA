@@ -866,7 +866,10 @@ class CoTAgent:
         self.reflectionResponse_text_raw = None
         self.reflectionResponse_raw = None
         self.reflectionResponse_text_raw, self.reflectionResponse_raw  = self.self_reflect_llm.run(self.stepReport.reflection_prompt, [self.originalImage, self.generatedImage], inMaxNewTokens=self.reflectLLM_maxTokens, maxAttempts=self.maxAtteptsToCallLLM)
-        self.reflectionResponse_text = format_step(self.reflectionResponse_text_raw)
+        if self.reflectionResponse_text_raw == None:
+            self.reflectionResponse_text = ""
+        else:
+            self.reflectionResponse_text = format_step(self.reflectionResponse_text_raw)
         return self.reflectionResponse_text
 
     def reset(self) -> None:
@@ -904,9 +907,11 @@ class CoTAgent:
         else:
             self.stepReport.agent_prompt = self._build_agent_prompt()
             self.agentResponse_text_raw, self.agentResponse_raw = self.action_llm.run(self.stepReport.agent_prompt, [inImage], inMaxNewTokens=self.actionLLM_maxTokens, maxAttempts=self.maxAtteptsToCallLLM)
-            
-            self.agentResponse_text = format_step(self.agentResponse_text_raw)
-        return self.agentResponse_text_raw
+            if(self.agentResponse_text == None):
+                self.agentResponse_text = "[Thought Start]N/A[Thought End]Finish[Prompt Start]N\A[Prompt End]"
+            else:
+                self.agentResponse_text = format_step(self.agentResponse_text_raw)
+        return self.agentResponse_text
     
     
     
