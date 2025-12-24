@@ -903,11 +903,14 @@ class CoTAgent:
             #tempPrompt = "Generate a prompt that could be used to generate a similar image."
             self.stepReport.agent_prompt = self._build_agent_prompt()
             self.agentResponse_text_raw, self.agentResponse_raw = self.action_llm.run(self.stepReport.agent_prompt, [inImage], inMaxNewTokens=self.actionLLM_maxTokens, maxAttempts=self.maxAtteptsToCallLLM)
-            self.agentResponse_text = self.agentResponse_text_raw
+            if(self.agentResponse_text_raw == None):
+                self.agentResponse_text = "[Thought Start]N/A[Thought End]Finish[Prompt Start]N\A[Prompt End]"
+            else:
+                self.agentResponse_text = self.agentResponse_text_raw
         else:
             self.stepReport.agent_prompt = self._build_agent_prompt()
             self.agentResponse_text_raw, self.agentResponse_raw = self.action_llm.run(self.stepReport.agent_prompt, [inImage], inMaxNewTokens=self.actionLLM_maxTokens, maxAttempts=self.maxAtteptsToCallLLM)
-            if(self.agentResponse_text == None):
+            if(self.agentResponse_text_raw == None):
                 self.agentResponse_text = "[Thought Start]N/A[Thought End]Finish[Prompt Start]N\A[Prompt End]"
             else:
                 self.agentResponse_text = format_step(self.agentResponse_text_raw)
